@@ -1,4 +1,4 @@
-***********************
+**********************
 Erstellung von Grafiken
 ***********************
 
@@ -817,7 +817,7 @@ matplotlib-Galerie ist nachfolgend abgebildet.
 
 .. image:: images/matplotlib/colormaps_reference_04_hires.png
    :height: 6.5cm
-   :align: left
+   :align: center
 
 Im folgenden Beispiel wählen wir die Farbpalette ``hot`` und füllen mit Hilfe
 der Funktion ``contourf`` die Flächen zwischen den Konturlinien. Damit die
