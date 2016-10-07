@@ -558,7 +558,7 @@ lassen. Dann muss der Konflikt von Hand gelöst werden. Um dies zu illustrieren,
 führen wir im ``develop``-Zweig eine Änderung ein, die beim Zusammenführen mit
 dem ``feature1``-Zweig zu einem Konflikt führt.
 
-.. image:: images/gitbranch/gitbranch10.png
+.. image:: images/gitbranch/gitbranch_10.png
    :width: 14cm
    :align: center
 
