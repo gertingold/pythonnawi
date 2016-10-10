@@ -223,7 +223,7 @@ eine gewisse Sorgfalt, und man ist für eventuelle Fehler selbst verantwortlich.
 Für die Anwendung ist es wichtig zu wissen, dass die Manipulation der Attribute
 ``shape`` und ``strides`` nicht die Daten im Speicher verändert. Es wird also
 nur eine neue Sicht auf die vorhandenen Daten vermittelt. Dies ist insofern von
-Bedeutung als das Kopieren von größeren Datenmengen durchaus mit einem größeren
+Bedeutung als dass Kopieren von größeren Datenmengen durchaus mit einem größeren
 Zeitaufwand verbunden sein kann. Ein Beispiel für die Durchführung einer
 häufigen Matrixoperation durch Anpassung der *strides* werden wir gleich sehen.
 Zuvor wollen wir uns aber überzeugen, dass in den obigen Beispielen tatsächlich
