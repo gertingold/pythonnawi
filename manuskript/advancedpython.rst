@@ -868,7 +868,7 @@ Funktion das berechnete Resultat zurückgeben. Damit ist die Definition der
 dekorierten Funktion beendet und der Dekorator gibt diese Funktion in Zeile 14
 zurück.
 
-Ruft man Zeile 23 nun die Funktion ``factorial`` auf, so wird wegen des
+Ruft man in Zeile 24 nun die Funktion ``factorial`` auf, so wird wegen des
 ``logging``-Dekorators in Wirklichkeit die gerade besprochene, dekorierte
 Funktion ausgeführt. Man erhält somit die folgende Ausgabe:
 
@@ -1284,7 +1284,7 @@ zu reagieren. Dies ist im folgenden Beispiel illustriert.
        try:
            return 1/x
        except ZeroDivisionError:
-           msg = 'May be the main program knows what to do...'
+           msg = 'Maybe the main program knows what to do...'
            raise ZeroDivisionError(msg)
    
    try:
@@ -1297,7 +1297,7 @@ zu reagieren. Dies ist im folgenden Beispiel illustriert.
 
 Dieses Programm erzeugt die folgende Ausgabe::
 
-   May be the main program knows what to do...
+   Maybe the main program knows what to do...
    Let's just continue!
    That's the end of the program.
 
