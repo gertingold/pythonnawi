@@ -62,7 +62,7 @@ Danke an …
 * … die Hörerinnen und Hörer der Vorlesung „Python für Naturwissenschaftler“, deren
   Fragen und Anregungen in diesem Manuskript ihren Niederschlag fanden;
 
-* Benjamin Spreng für eine Reihe von Kommentaren zu diesem Manuskript.
+* Michael Hartmann und Benjamin Spreng für eine Reihe von Kommentaren zu diesem Manuskript.
 
 
 .. [#arxiv1210.0530] `arXiv:1210.0530 <http://de.arxiv.org/abs/1210.0530/>`_
