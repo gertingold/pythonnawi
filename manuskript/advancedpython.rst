@@ -868,7 +868,7 @@ Funktion das berechnete Resultat zurückgeben. Damit ist die Definition der
 dekorierten Funktion beendet und der Dekorator gibt diese Funktion in Zeile 14
 zurück.
 
-Ruft man Zeile 23 nun die Funktion ``factorial`` auf, so wird wegen des
+Ruft man in Zeile 24 nun die Funktion ``factorial`` auf, so wird wegen des
 ``logging``-Dekorators in Wirklichkeit die gerade besprochene, dekorierte
 Funktion ausgeführt. Man erhält somit die folgende Ausgabe:
 
