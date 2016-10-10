@@ -1284,7 +1284,7 @@ zu reagieren. Dies ist im folgenden Beispiel illustriert.
        try:
            return 1/x
        except ZeroDivisionError:
-           msg = 'May be the main program knows what to do...'
+           msg = 'Maybe the main program knows what to do...'
            raise ZeroDivisionError(msg)
    
    try:
@@ -1297,7 +1297,7 @@ zu reagieren. Dies ist im folgenden Beispiel illustriert.
 
 Dieses Programm erzeugt die folgende Ausgabe::
 
-   May be the main program knows what to do...
+   Maybe the main program knows what to do...
    Let's just continue!
    That's the end of the program.
 
