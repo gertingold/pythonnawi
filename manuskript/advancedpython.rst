@@ -283,7 +283,7 @@ Zahl ohne Rest durch die zweite Zahl teilbar ist.
 
 .. sourcecode:: ipython
 
-   In [1]: [(x, y) for x in range(1, 11) for y in range(2, x) if x % y==0]
+   In [1]: [(x, y) for x in range(1, 11) for y in range(2, x) if x % y == 0]
    Out[1]: [(4, 2), (6, 2), (6, 3), (8, 2), (8, 4), (9, 3), (10, 2), (10, 5)]
 
 Als kleines Anwendungsbeispiel betrachten wir den Quicksort-Algorithmus zur
