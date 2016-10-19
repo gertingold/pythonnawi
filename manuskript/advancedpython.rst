@@ -116,7 +116,7 @@ auf das ``frozenset`` zurück, das wie der Name schon andeutet unveränderlich
 
 Um zu überprüfen, ob ein Objekt Element einer Menge ist, ist es günstig,
 statt einer Liste ein Set zu verwenden, wie die folgenden Tests zeigen.
-[#ipython]_
+[#timeit]_
 
 .. sourcecode:: ipython
 
@@ -189,6 +189,202 @@ Möglichkeiten sind im Folgenden illustriert.
    In [11]: a.isdisjoint(b)
    Out[11]: True
 
+.. _collections:
+
+=========================
+Das ``collections``-Modul
+=========================
+
+Die Standardbibliothek von Python stellt im ``collections``-Modul einige
+interessante Container-Datentypen zur Verfügung, die es erlauben, Probleme
+zu lösen, die gelegentlich mit Listen, Tupeln oder Dictionaries auftreten.
+Im Folgenden soll eine Auswahl dieser Datentypen kurz vorgestellt werden.
+
+Wir beginnen mit den Tupeln, deren einzelne Elemente mit Hilfe von Integern
+angesprochen werden können. Wenn die einzelnen Elemente eine spezielle Bedeutung
+haben, ist jedoch die Zuordnung zu den Indizes nicht immer offensichtlich.
+
+Als Beispiel betrachten wir Farben, die im RGB-System durch ein Tupel von drei
+Integern mit Werten zwischen 0 und 255 dargestellt werden können. Eine bestimmte
+Farbe könnte also folgendermaßen durch ein Tupel repräsentiert sein:
+
+.. sourcecode:: ipython
+
+   In [1]: farbe = (135, 206, 235)
+
+   In [2]: farbe[1]
+   Out[2]: 206
+
+   In [3]: r, g, b = farbe
+
+   In [4]: g
+   Out[4]: 206
+
+Hierbei muss man wissen, dass das Element mit Index 1 dem Grünwert entspricht.
+Um den Code verständlicher zu machen, kann man das Tupel auch wie in
+Eingabezeile 3 in die einzelnen Bestandteile zerlegen und diese entsprechend
+benennen. Es wäre jedoch praktischer, wenn man diesen Schritt nicht explizit
+vornehmen müsste.
+
+In einem solchen Fall ist ein ``namedtuple`` nützlich, um lesbaren Code zu
+schreiben. In der Definition des ``namedtuple`` zur Darstellung einer Farbe
+ordnen wir den einzelnen Elementen Namen zu und können mit Hilfe dieser Namen
+auf die Elemente zugreifen.
+
+.. sourcecode:: ipython
+
+   In [5]: import collections
+
+   In [6]: Farbe = collections.namedtuple('Farbe', 'r g b')
+
+   In [7]: f1 = Farbe(135, 206, 235)
+
+   In [8]: f1[1]
+   Out[8]: 206
+
+   In [9]: f1.g
+   Out[9]: 206
+
+   In [10]: f2 = Farbe(50, 205, 50)
+
+   In [11]: f1.b > f2.b
+   Out[11]: True
+
+Gemäß der Definition in Eingabezeile 6 erhalten die Elemente die Bezeichner
+``r``, ``g`` und ``b`` und können dazu verwendet werden, auf die entsprechenden
+Elemente zuzugreifen, wie in den Eingabezeilen 9 und 11 zu sehen ist. Es ist
+jedoch auch weiterhin möglich, wie in Eingabezeile 8 auf ein Element mit Hilfe
+seines Index zuzugreifen. 
+
+Die Bezeichner sind nicht nur auf einzelne Buchstaben beschränkt, sondern können
+bei Bedarf noch aussagekräftiger gewählt werden.
+
+.. sourcecode:: ipython
+
+   In [12]: Farbe = collections.namedtuple('Farbe', 'rot grün blau')
+
+   In [13]: f1 = Farbe(135, 206, 235)
+
+   In [14]: f1.grün
+   Out[14]: 206
+
+Im Unterschied zum Dictionary ist das ``namedtuple``, genauso wie das Tuple,
+`immutable`, kann also zum Beispiel als Schlüssel für ein Dictionary verwendet
+werden. Zudem ist es so speichereffizient wie ein normales Tuple.
+
+.. sourcecode:: ipython
+
+   In [15]: f1.rot = 20
+   ---------------------------------------------------------------------------
+   AttributeError                            Traceback (most recent call last)
+   <ipython-input-15-ac8b7e672be5> in <module>()
+   ----> 1 f1.rot = 20
+
+   AttributeError: can't set attribute
+
+   In [16]: f2 = Farbe(50, 205, 50)
+
+   In [17]: rgbdict = {f1: 'SkyBlue', f2: 'LimeGreen'}
+
+   In [18]: rgbdict[Farbe(128, 90, 215)]
+   Out[18]: 'SkyBlue'
+
+Ein anderes Problem tritt in Zusammenhang mit Listen auf. Während der
+Zeitaufwand für das Anhängen eines neuen Elements sehr klein ist, kann das
+Einfügen eines Elements am Anfang der Liste sehr zeitaufwändig sein wie das
+folgende Beispiel zeigt.
+
+.. sourcecode:: ipython
+
+   In [19]: %%timeit
+       ...: xlist = list()
+       ...: for n in range(100000):
+       ...:     xlist.append(n)
+       ...: 
+   100 loops, best of 3: 7.66 ms per loop
+
+   In [20]: %%timeit
+       ...: xlist = list()
+       ...: for n in range(100000):
+       ...:     xlist.insert(0, n)
+       ...: 
+   1 loop, best of 3: 2.63 s per loop
+
+In einem solchen Fall kann ein so genanntes ``deque``, dessen Name sich von
+`double-ended queue` [#deque]_ ableitet, erhebliche Vorteile bringen, so lange
+man Elemente an einem der beiden Enden hinzufügt oder entfernt.
+
+.. sourcecode:: ipython
+
+   In [21]: %%timeit
+       ...: xdeq = collections.deque()
+       ...: for n in range(100000):
+       ...:     xdeq.append(n)
+       ...: 
+   100 loops, best of 3: 7.57 ms per loop
+
+   In [22]: %%timeit
+       ...: xdeq = collections.deque()
+       ...: for n in range(100000):
+       ...:     xdeq.appendleft(n)
+       ...: 
+   100 loops, best of 3: 7.61 ms per loop
+
+Eine mögliche Anwendung ist ein FIFO (`first in, first out`), das Objekte
+aufnehmen kann und in dieser Reihenfolge auch wieder zurückgibt.
+
+.. sourcecode:: ipython
+
+   In [23]: xdeq = collections.deque([2, 1])
+
+   In [24]: xdeq.appendleft(3)
+
+   In [25]: xdeq
+   Out[25]: deque([3, 2, 1])
+
+   In [26]: xdeq.pop()
+   Out[26]: 1
+
+   In [27]: xdeq
+   Out[27]: deque([3, 2])
+
+   In [28]: xdeq.pop()
+   Out[28]: 2
+
+   In [29]: xdeq
+   Out[29]: deque([3])
+
+   In [30]: xdeq.appendleft(4)
+
+   In [31]: xdeq
+   Out[31]: deque([4, 3])
+
+   In [32]: xdeq.pop()
+   Out[32]: 3
+
+   In [33]: xdeq
+   Out[33]: deque([4])
+
+Auch das Rotieren ist leicht möglich.
+
+.. sourcecode:: ipython
+
+   In [34]: xdeq = collections.deque(range(10))
+
+   In [35]: xdeq
+   Out[35]: deque([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+   In [36]: xdeq.rotate(3)
+
+   In [37]: xdeq
+   Out[37]: deque([7, 8, 9, 0, 1, 2, 3, 4, 5, 6])
+
+   In [38]: xdeq.rotate(-5)
+
+   In [39]: xdeq
+   Out[39]: deque([2, 3, 4, 5, 6, 7, 8, 9, 0, 1])
+
+
 .. _listcomprehensions:
 
 ===================
@@ -239,7 +435,7 @@ erzeugt.
     (1.5707963267948966, 1.0)]
 
 List comprehensions sind nicht nur häufig übersichtlicher, sondern in der
-Ausführung auch etwas schneller. [#timeit]_
+Ausführung auch etwas schneller.
 
 .. sourcecode:: ipython
 
@@ -1368,19 +1564,17 @@ cython.boundscheck(False)`` an.  Eine andere Anwendung besteht im Ausschalten
 des *Global Interpreter Locks* [#gil]_ von Python mit Hilfe des
 ``nogil``-Kontextmanagers.
 
-.. [#ipython] Hier verwenden wir ``%timeit``, eine der so genannten magischen
-              Funktionen der verbesserten Python-Shell ``IPython``, die es erlaubt,
-              Ausführungszeiten einzelner Befehle oder (ab Version 0.13) von
-              Befehlsblöcken zu bestimmen. Wie werden hierauf im Abschnitt :ref:`timeit`
-              zurückkommen.
+.. [#timeit] Hier verwenden wir ``%timeit``, eine der so genannten magischen
+             Funktionen der verbesserten Python-Shell ``IPython``, die es erlaubt,
+             Ausführungszeiten einzelner Befehle zu bestimmen.
+             Will man die Ausführungszeit eines ganzen Befehlsblocks bestimmen,
+             so muss die magische ``%%timeit``-Funktion mit zwei Prozentzeichen
+             verwendet werden. Wir werden hierauf im Abschnitt :ref:`timeit` zurückkommen.
+.. [#deque] Für weitere Informationen siehe z.B. den Wikipedia-Eintrag zu
+            `double-ended queue <https://en.wikipedia.org/wiki/Double-ended_queue>`_.
 .. [#listcomprehension] Wir belassen es hier bei dem üblicherweise verwendeten
               englischen Begriff. Gelegentlich findet man den Begriff
               »Listenabstraktion« als deutsche Übersetzung.
-.. [#timeit] Will man die Ausführungszeit eines ganzen Befehlsblocks bestimmen,
-             so muss die magische ``%%timeit``-Funktion mit zwei Prozentzeichen
-             verwendet werden. Bei Einzeilern genügt ``%timeit`` mit einem
-             Prozentzeichen. ``%%timeit`` wurde der ``IPython``-Version 0.13
-             eingeführt. Wir werden hierauf im Abschnitt :ref:`timeit` zurückkommen.
 .. [#gvrblog] Guido von Rossum begründet das in einem `Blog
            <http://www.artima.com/weblogs/viewpost.jsp?thread=98196>`_ 
            mit dem Titel *The fate of reduce() in Python 3000* aus dem Jahr 2005.
