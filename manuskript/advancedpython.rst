@@ -365,7 +365,7 @@ aufnehmen kann und in dieser Reihenfolge auch wieder zurückgibt.
    In [33]: xdeq
    Out[33]: deque([4])
 
-Auch das Rotieren ist leicht möglich.
+Auch das Rotieren eines ``deque`` ist leicht möglich.
 
 .. sourcecode:: ipython
 
@@ -383,6 +383,57 @@ Auch das Rotieren ist leicht möglich.
 
    In [39]: xdeq
    Out[39]: deque([2, 3, 4, 5, 6, 7, 8, 9, 0, 1])
+
+Abschließend wollen wir noch kurz das ``OrderedDict`` erwähnen. Bei Dictionaries
+sind die Schlüssel im Allgemeinen nicht geordnet. Ein ``OrderedDict``
+dagegen merkt sich, in welcher Reihenfolge die Einträge hinzugefügt wurden.
+
+.. sourcecode:: ipython
+
+   In [40]: nobelpreise = dict([('Marie Curie', 1903),
+       ...:                     ('Maria Goeppert Mayer', 1963),
+       ...:                     ('Klaus von Klitzing', 1985),
+       ...:                     ('Albert Einstein', 1921)])
+
+   In [41]: for preis in nobelpreise:
+       ...:     print(preis)
+       ...:     
+   Maria Goeppert Mayer
+   Marie Curie
+   Albert Einstein
+   Klaus von Klitzing
+
+   In [42]: nobelpreise = collections.OrderedDict([('Marie Curie', 1903),
+       ...:                   ('Maria Goeppert Mayer', 1963),
+       ...:                   ('Klaus von Klitzing', 1985),
+       ...:                   ('Albert Einstein', 1921)])
+
+   In [43]: for preis in nobelpreise:
+       ...:     print(preis)
+       ...:     
+   Marie Curie
+   Maria Goeppert Mayer
+   Klaus von Klitzing
+   Albert Einstein
+
+Es gibt die Möglichkeit, mit der Methode :func:`move_to_end` einen einzelnen
+Eintrag an das Ende eines ``OrderedDict`` zu verschieben. Um ein bestehendes
+Dictionary oder ``OrderedDict`` umzusortieren, erzeugt man am besten ein neues
+``OrderedDict``.
+  
+.. sourcecode:: ipython
+
+   In [44]: nobelpreise_sorted = collections.OrderedDict(
+       ...:                          sorted(nobelpreise.items(),
+       ...:                                 key=lambda x: x[1]))
+
+   In [45]: for name, jahr in nobelpreise_sorted.items():
+       ...:     print(jahr, name)
+       ...:     
+   1903 Marie Curie
+   1921 Albert Einstein
+   1963 Maria Goeppert Mayer
+   1985 Klaus von Klitzing
 
 
 .. _listcomprehensions:
