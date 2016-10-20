@@ -286,7 +286,7 @@ werden. Zudem ist es so speichereffizient wie ein normales Tuple.
 
    In [17]: rgbdict = {f1: 'SkyBlue', f2: 'LimeGreen'}
 
-   In [18]: rgbdict[Farbe(128, 90, 215)]
+   In [18]: rgbdict[Farbe(135, 206, 235)]
    Out[18]: 'SkyBlue'
 
 Ein anderes Problem tritt in Zusammenhang mit Listen auf. Während der
