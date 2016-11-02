@@ -882,9 +882,8 @@ erzeugt die ersten Zeilen eines pascalschen Dreiecks.
       ...:     coeff = 1
       ...:     yield coeff
       ...:     for m in range(n):
-      ...:         coeff = coeff*(n-m)/(m+1)
+      ...:         coeff = coeff*(n-m)//(m+1)
       ...:         yield coeff
-      ...:     raise StopIteration
    
    In [2]: for n in range(11):
       ...:     print " ".join(str(p).center(3) for p in pascaltriangle(n)).center(50)
