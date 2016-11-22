@@ -71,11 +71,14 @@ enstprechender Zugriff auf eine Spalte funktioniert jedoch nicht:
    In [5]: matrix[:][0]
    Out[5]: [1.1, 2.2, 3.3]
 
-Hier gibt ``matrix[:]`` eine Liste mit allen Unterlisten, also einfach die ursprüngliche
-Liste zurück. Somit ist ``matrix[:][0]`` nichts anderes als die erste Unterliste. Wir
-erhalten also wiederum die erste Zeile und keineswegs die erste Spalte. Allgemein ist
-die Extraktion einer Untermatrix aus einer durch Listen dargestellten Matrix nicht ohne
-einen gewissen Aufwand möglich.
+Hier gibt ``matrix[:]`` eine Liste mit allen Unterlisten, also einfach die
+ursprüngliche Liste zurück. Somit ist ``matrix[:][0]`` nichts anderes als die
+erste Unterliste. Wir erhalten also wiederum die erste Zeile und keineswegs die
+erste Spalte. Auch wenn es beispielsweise mit Hilfe einer list comprehension
+möglich ist, eine Spalte aus einer Matrix zu extrahieren, zeigt das Beispiel,
+dass Zeilen und Spalten in einer durch eine Liste dargestellten Matrix nicht in
+gleicher Weise behandelt werden können. Für eine Matrix würde man eine solche
+Gleichbehandlung jedoch auf jeden Fall erwarten.
 
 Ein weiterer Nachteil besteht in der Flexibilität von Listen, die ja bekanntlich beliebige
 Objekte enthalten können. Python muss daher einen erheblichen Aufwand bei der Verwaltung
@@ -90,106 +93,238 @@ zur Verfügung gestellte ``ndarray``-Objekt, also ein N-dimensionales Array, zur
 NumPy-Arrays
 ------------
 
-Ein Array [#array]_ besitzt als wesentliche Bestandteile die Daten im eigentlichen Sinne, also die
-Werte der einzelnen Matrixelemente, sowie Information darüber, wie auf ein spezifisches
-Matrixelement zugegriffen werden kann. Die Daten sind im Speicher einfach hintereinander,
-also in eindimensionaler Form, abgelegt. Dabei gibt es die Möglichkeit, die Matrix zeilenweise
-oder spaltenweise abzuspeichern. Ersteres wird von der Programmiersprache C verwendet,
-während die zweite Variante von Fortran verwendet wird.
-
-Nachdem die Daten strukturlos im Speicher abgelegt sind, müssen ``ndarray``-Objekte, wie
-schon erwähnt, neben den Daten auch Informationen darüber besitzen, wie auf einzelne
-Matrixelemente zugegriffen wird. Auf diese Weise lässt sich sehr leicht die Adresse der
-Daten eines Matrixelements bestimmen. Zudem ist es möglich, die gleichen Daten im Speicher
-auf verschiedene Weise anzusehen. Damit ist es häufig möglich, unnötige Kopiervorgänge im
-Speicher zu vermeiden. Andererseits ist es aus diesem Grunde wichtig zu wissen, ob NumPy
-im Einzelfall nur eine andere Sicht auf die Daten zur Verfügung stellt oder tatsächlich
-ein neues Array erzeugt.
-
-Um die Informationen über die Struktur eines Arrays besser zu verstehen, betrachten wir
-ein Beispiel. 
+Bevor wir mit NumPy-Arrays [#array]_ arbeiten können, müssen wir NumPy importieren.
+Da der Namensraum von NumPy sehr groß ist, empfiehlt es sich, diesen nicht mit
+``from numpy import *`` zu importieren. Auch der Import einzelner Objekte empfiehlt
+sich nicht. Importiert man beispielsweise die Sinusfunktion aus NumPy, so ist
+weiter unten in einem Pythonskript nicht mehr ohne Weiteres erkennbar, ob es sich
+um den Sinus aus NumPy oder aus dem ``math``-Modul handelt. Üblicherweise importiert
+man daher NumPy in folgender Weise:
 
 .. sourcecode:: ipython
 
    In [1]: import numpy as np
 
-   In [2]: matrix = np.arange(16)
+Die Abkürzung ``np`` erspart dabei etwas Schreibarbeit, macht aber zugleich die Herkunft
+eines Objekts deutlich. Hält man sich an diese Konvention, so trägt man zur Verständlichkeit
+des Codes bei.
 
-   In [3]: matrix
-   Out[3]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
-
-   In [4]: matrix.dtype, matrix.itemsize, matrix.size, matrix.nbytes
-   Out[4]: (dtype('int64'), 8, 16, 128)
-
-   In [5]: matrix.shape
-   Out[5]: (16,)
-
-   In [6]: matrix.strides
-   Out[6]: (8,)
-
-Wir laden zunächst das ``numpy``-Modul, für das üblicherweise die Abkürzung
-``np`` verwendet wird. Dieser Schritt wird in allen folgenden Beispielen
-vorausgesetzt.  Dann erzeugen wir uns auf möglichst einfache Weise ein Array
-mit 16 Elementen. Die Funktionsweise von ``arange`` werden wir später noch
-etwas ausführlicher diskutieren. Wir erhalten somit ein eindimensionales Array,
-das die Zahlen von 0 bis 15 als Integers enthält.  Das Objekt ``matrix`` hat
-nun einige Eigenschaften. Der Datentyp ``dtype`` ist hier ``int64``, also ein
-Integer mit einer Länge von 64 Bit oder 8 Bytes. Letzteres wird auch durch das
-Attribut ``itemsize`` angegeben. Die Größe des Arrays, also ``size``, ist 16,
-so dass sich insgesamt ein Speicherbedarf ``nbytes`` von 128 Bytes ergibt. Das
-Tupel ``shape`` gibt die Form des Arrays an. In unserem Fall gibt es nur eine
-Dimension, die 16 Elemente enthält. Das Tupel ``strides`` schließlich gibt an,
-wie weit benachbarte Elemente in einer bestimmten Dimension voneinander
-entfernt sind. Bei einem eindimensionalen Array ist dies gerade die Zahl der
-Bytes, die ein Dateneintrag benötigt.
-
-Mit Hilfe der Attribute ``shape`` und ``strides`` kann man nun eine andere
-Sicht auf das gleiche Array erhalten. 
+Um die Eigenschaften von Arrays zu untersuchen, müssen wir zunächst wissen, wie sich ein
+Array erzeugen lässt. In NumPy ist es sehr einfach, die Dokumentation nach einem bestimmten
+Text zu durchsuchen. Die zahlreichen Möglichkeiten, ein Array zu erzeugen, lassen sich
+folgendermaßen erhalten:
 
 .. sourcecode:: ipython
 
-   In [7]: matrix.shape = (4, 4)
+   In [2]: np.lookfor('create array')
+   Search results for 'create array'
+   ---------------------------------
+   numpy.array
+       Create an array.
+   numpy.memmap
+       Create a memory-map to an array stored in a *binary* file on disk.
+   numpy.diagflat
+       Create a two-dimensional array with the flattened input as a diagonal.
+   numpy.fromiter
+       Create a new 1-dimensional array from an iterable object.
+   ...
 
-   In [8]: matrix
-   Out[8]: 
+Dabei wurde hier nur ein Teil der Ausgabe dargestellt. Gleich der erste Eintrag verrät
+uns, wie man aus einer Liste von Listen ein Array erzeugen kann. Details hierzu erhält
+man bei Bedarf wie üblich mit ``help(np.array)``.
+
+.. sourcecode:: ipython
+
+   In [3]: matrix = [[0, 1, 2],
+      ...:           [3, 4, 5],
+      ...:           [6, 7, 8]]
+   
+   In [4]: myarray = np.array(matrix)
+   
+   In [5]: myarray
+   Out[5]: 
+   array([[0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8]])
+   
+   In [6]: type(myarray)
+   Out[6]: numpy.ndarray
+
+Ein Array [#array]_ besitzt als wesentliche Bestandteile die Daten im
+eigentlichen Sinne, also die Werte der einzelnen Matrixelemente, sowie
+Information darüber, wie auf ein spezifisches Matrixelement zugegriffen werden
+kann. Die Daten sind im Speicher einfach hintereinander, also in
+eindimensionaler Form, abgelegt. Dabei gibt es die Möglichkeit, die Matrix
+zeilenweise oder spaltenweise abzuspeichern. Ersteres wird von der
+Programmiersprache C verwendet, während die zweite Variante von Fortran
+verwendet wird.
+
+Nachdem die Daten strukturlos im Speicher abgelegt sind, müssen
+``ndarray``-Objekte, wie schon erwähnt, neben den Daten auch Informationen
+darüber besitzen, wie auf einzelne Matrixelemente zugegriffen wird. Auf diese
+Weise lässt sich sehr leicht die Adresse der Daten eines Matrixelements
+bestimmen. Zudem ist es möglich, die gleichen Daten im Speicher auf
+verschiedene Weise anzusehen. Damit ist es häufig möglich, unnötige
+Kopiervorgänge im Speicher zu vermeiden. Andererseits ist es aus diesem Grunde
+wichtig zu wissen, ob NumPy im Einzelfall nur eine andere Sicht auf die Daten
+zur Verfügung stellt oder tatsächlich ein neues Array erzeugt.
+
+Um die Informationen über die Struktur eines Arrays besser zu verstehen,
+definieren wir uns eine Funktion, die einige Attribute des Arrays ausgibt.
+
+.. sourcecode:: ipython
+
+   In [7]: def array_attributes(a):
+      ...:     for attr in ('ndim', 'size', 'itemsize', 'dtype', 'shape', 'strides'):
+      ...:         print('{:8s}: {}'.format(attr, getattr(a, attr)))
+
+Zum Experimentieren mit Arrays ist die ``arange``-Methode sehr praktisch, die
+ähnlich wie das uns bereits bekannte ``range`` eine Reihe von Zahlen erzeugt,
+nun jedoch in einem Array.
+
+.. sourcecode:: ipython
+
+   In [8]: matrix = np.arange(16)
+
+   In [9]: matrix
+   Out[9]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+
+   In [10]: array_attributes(matrix)
+   ndim    : 1 
+   size    : 16
+   itemsize: 8
+   dtype   : int64
+   shape   : (16,)
+   strides : (8,)
+               
+Das Attribut ``ndim`` gibt an, dass wir es mit einem eindimensionalen Array
+zu tun haben, während das Attribut ``size`` anzeigt, dass das Array insgesamt
+16 Elemente besitzt. Jedes Element besitzt den Datentyp (``dtype``) ``int64``.
+Es handelt sich also um 64-Bit-Integers, die eine Größe von 8 Byte (``itemsize``)
+besitzen. Die Attribute können wir auch direkt in der üblichen objektorientierten
+Schreibweise ansprechen. Zum Beispiel gibt
+
+.. sourcecode:: ipython
+
+   In [12]: matrix.nbytes
+   Out[12]: 128
+             
+den Speicherplatzbedarf des Arrays in Bytes an.
+
+Für Arrays kommen eine ganze Reihe verschiedener Datentypen in Frage, zum Beispiel
+Integers verschiedener Länge (``int8``, ``int16``, ``int32``, ``int64``) oder
+auch ohne Vorzeichen (``uint8``, ...), Gleitkommazahlen (``float16``, ``float32``,
+``float64``), komplexe Zahlen (``complex64``, ``complex128``), Wahrheitswerte
+(``bool8``) und sogar Unicode-Strings als nichtnumerischer Datentyp. Wenn der
+Datentyp nicht angeben ist oder durch die Konstruktion des Arrays bestimmt ist,
+werden die im jeweiligen System standardmäßig verwendeten Gleitkommazahlen
+herangezogen, also meistens ``float64``. Bei Integers ist zu beachten, dass
+es im Gegensatz zu Python-Integers wegen der endlichen Länge zu einem Überlauf
+kommen kann, wie das folgende Beispiel demonstriert.
+
+.. sourcecode:: ipython
+
+   In [13]: np.arange(1, 160, 10, dtype=np.int8)
+   Out[13]:
+   array([   1,   11,   21,   31,   41,   51,   61,   71,   81,   91,  101,
+           111,  121, -125, -115, -105], dtype=int8)
+
+|frage| Wie kann man diese Ausgabe verstehen?
+
+Besonders interessant sind die beiden Attribute ``shape`` und ``strides``. Der
+Wert des Attributs ``shape``, in unserem Beispiel das Tupel ``(16,)``, gibt die
+Zahl der Elemente in der jeweiligen Dimension an. Um dies besser zu verstehen,
+ändern wir dieses Attribut ab, wobei darauf zu achten ist, dass die Zahl der
+Elemente des Arrays erhalten bleibt. Wir wandeln das eindimensionale Array mit
+16 Elementen in ein 4×4-Array um.
+
+.. sourcecode:: ipython
+
+   In [14]: matrix.shape = (4, 4)
+
+   In [15]: matrix
+   Out[15]: 
    array([[ 0,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11],
           [12, 13, 14, 15]])
 
-   In [9]: matrix.strides
-   Out[9]: (32, 8)
+   In [16]: matrix.strides
+   Out[16]: (32, 8)
 
-   In [10]: matrix.shape = (2, 2, 2, 2)
+Dabei wird deutlich, dass sich nicht nur die Form (``shape``) geändert hat, sondern
+aus aus dem Tupel ``(8,)`` des Attributs ``strides`` das Tupel ``(32, 8)`` wurde.
+Die *strides* geben an, um wieviel Bytes man weitergehen muss, um zu nächsten Element
+in dieser Dimension zu gelangen. Die folgende Abbildung zeigt dies an einem einfachen
+Array.
 
-   In [11]: matrix
-   Out[11]: 
-   array([[[[ 0,  1],
-            [ 2,  3]],
+.. image:: images/numpy/strides.*
+           :height: 10cm
 
-           [[ 4,  5],
-            [ 6,  7]]],
+Für die Anwendung ist es wichtig zu wissen, dass die Manipulation der Attribute
+``shape`` und ``strides`` nicht die Daten im Speicher verändert. Es wird also
+nur eine neue Sicht auf die vorhandenen Daten vermittelt. Dies ist insofern von
+Bedeutung als das Kopieren von größeren Datenmengen durchaus mit einem größeren
+Zeitaufwand verbunden sein kann.
 
+Um uns davon zu überzeugen, dass tatsächlich kein neues Array erzeugt wird, generieren
+wir nochmals ein eindimensionales Array und daraus mit Hilfe von ``reshape`` ein
+zweidimensionales Array.
 
-          [[[ 8,  9],
-            [10, 11]],
+.. sourcecode:: ipython
 
-           [[12, 13],
-            [14, 15]]]])
+   In [17]: m1 = np.arange(16)
 
-   In [12]: matrix.strides
-   Out[12]: (64, 32, 16, 8)
+   In [18]: m1
+   Out[18]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
 
-Wir interpretieren zunächst die 16 Matrixelemente als ein 4×4-Array, ohne dabei
-die eigentlichen Array-Daten im Speicher in irgendeiner Weise zu modifizieren.
-Lediglich das Attribut ``shape`` haben wir neu gesetzt. Das Attribut
-``strides`` gibt uns nun an, dass der Abstand der Daten in der ersten
-Dimension, also innerhalb einer Spalte, 32 Bytes beträgt, während der Abstand in
-der zweiten Dimension, also innerhalb einer Zeile, nach wie vor 8 ist. So lange
-das Produkt der Dimensionen der Gesamtzahl der Matrixelemente entspricht,
-können wir auch andere Matrixdimensionen wählen. So können wir unsere Daten
-auch als ein 2×2×2×2-Array ansehen, wie der zweite Teil der obigen Ausgabe
-zeigt.
+   In [19]: m2 = m1.reshape(4, 4)
+
+   In [20]: m2
+   Out[20]: 
+   array([[ 0,  1,  2,  3],
+          [ 4,  5,  6,  7],
+          [ 8,  9, 10, 11],
+          [12, 13, 14, 15]])
+
+Nun ändern wir das erste Element in dem eindimensionalen Array ab und stellen in der
+Tat fest, dass sich diese Änderung auch auf das zweidimensionale Array auswirkt.
+
+.. sourcecode:: ipython
+
+   In [19]: m1[0] = 99
+
+   In [20]: m1
+   Out[20]: array([99,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+   
+   In [21]: m2
+   Out[21]: 
+   array([[99,  1,  2,  3],
+          [ 4,  5,  6,  7],
+          [ 8,  9, 10, 11],
+          [12, 13, 14, 15]])
+
+Eine Matrix lässt sich auch transponieren, ohne dass Matrixelemente im Speicher hin
+und her kopiert werden müssen. Stattdessen werden nur die beiden Werte der *strides*
+vertauscht.
+
+.. sourcecode:: ipython
+
+   In [22]: m2.strides
+   Out[22]: (32, 8)
+
+   In [23]: m2.T
+   Out[23]: 
+   array([[99,  4,  8, 12],
+          [ 1,  5,  9, 13],
+          [ 2,  6, 10, 14],
+          [ 3,  7, 11, 15]])
+
+   In [24]: m2.T.strides
+   Out[24]: (8, 32)
+
+Obwohl die Daten im Speicher nicht verändert wurden, kann man jetzt mit der
+transponierten Matrix arbeiten. 
 
 Mit Hilfe der Attribute ``shape`` und ``strides`` lässt sich die Sicht auf ein
 Array auf sehr flexible Weise festlegen. Allerdings ist der Benutzer selbst für
@@ -232,61 +367,6 @@ entspricht. Python interpretiert dennoch die erhaltene Information und erzeugt
 so das obige Array. In unserem Beispiel erreicht man bei jedem zweiten Wert
 wieder eine korrekte Datengrenze. Die Manipulation von *strides* erfordert also
 eine gewisse Sorgfalt, und man ist für eventuelle Fehler selbst verantwortlich.
-
-Für die Anwendung ist es wichtig zu wissen, dass die Manipulation der Attribute
-``shape`` und ``strides`` nicht die Daten im Speicher verändert. Es wird also
-nur eine neue Sicht auf die vorhandenen Daten vermittelt. Dies ist insofern von
-Bedeutung als das Kopieren von größeren Datenmengen durchaus mit einem größeren
-Zeitaufwand verbunden sein kann. Ein Beispiel für die Durchführung einer
-häufigen Matrixoperation durch Anpassung der *strides* werden wir gleich sehen.
-Zuvor wollen wir uns aber überzeugen, dass in den obigen Beispielen tatsächlich
-kein neues Array erzeugt wurde. 
-
-Dazu setzen wir den oberen linken Eintrag im ursprünglichen Array auf einen neuen
-Wert und zeigen, dass diese Änderung auch in den Arrays mit veränderten *strides*
-zu sehen ist.
-
-.. sourcecode:: ipython
-
-   In [18]: matrix[0, 0] = 99
-
-   In [19]: matrix
-   Out[19]: 
-   array([[99,  1,  2,  3],
-          [ 4,  5,  6,  7],
-          [ 8,  9, 10, 11],
-          [12, 13, 14, 15]])
-
-   In [20]: matrix1
-   Out[20]: 
-   array([[99,  2,  4,  6],
-          [ 2,  4,  6,  8],
-          [ 4,  6,  8, 10],
-          [ 6,  8, 10, 12]])
-
-Eine Matrix lässt sich nun transponieren, ohne dass Matrixelemente im Speicher hin
-und her kopiert werden müssen. Dies zeigt das folgende Beispiel, in welchem einfach
-die zwei Werte der *strides* vertrauscht werden:
-
-.. sourcecode:: ipython
-
-   In [21]: matrix, matrix.strides
-   Out[21]: 
-   (array([[99,  1,  2,  3],
-           [ 4,  5,  6,  7],
-           [ 8,  9, 10, 11],
-           [12, 13, 14, 15]]), (32, 8))
-
-
-   In [22]: np.lib.stride_tricks.as_strided(matrix, strides=(8, 32))
-   Out[22]: 
-   array([[99,  4,  8, 12],
-          [ 1,  5,  9, 13],
-          [ 2,  6, 10, 14],
-          [ 3,  7, 11, 15]])
-
-Obwohl die Daten im Speicher nicht verändert wurden, kann man jetzt mit der
-transponierten Matrix arbeiten.
 
 .. _arrayerzeugung:
 
@@ -1261,6 +1341,8 @@ Matrix erzeugt, so dass die beiden Funktionen ``eig`` und ``eigh`` mit der
 gleichen Matrix arbeiten. Die Funktion ``eigh`` ist in diesem Beispiel immerhin
 um mehr als einen Faktor 3 schneller.
 
+.. |frage| image:: images/symbols/question.*
+           :height: 1em
 .. [#array] Wir verwenden im Folgenden das englische Wort *Array*, um damit den ``ndarray``-Datentyp
             aus NumPy zu bezeichnen. Ein Grund dafür, nicht von Matrizen zu sprechen, besteht darin,
             dass sich Arrays nicht notwendigerweise wie Matrizen verhalten. So entspricht das Produkt
