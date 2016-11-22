@@ -25,9 +25,9 @@ sein können.
 
 .. _pythonlisten:
 
-------------------------------
-Python-Listen und NumPy-Arrays
-------------------------------
+--------------------------
+Python-Listen und Matrizen
+--------------------------
 
 Viele naturwissenschaftliche Problemstellungen lassen sich in natürlicher Weise mit Hilfe
 von Vektoren und Matrizen formulieren. Dies kann entweder eine Eigenschaft des ursprünglichen
@@ -85,6 +85,10 @@ Einträge vom gleichen Datentyp sind. Es sollte also möglich sein, erheblich ef
 Programme zu schreiben, indem man Matrizen nicht durch Listen darstellt, sondern durch
 einen auf diese Aufgabe zugeschnittenen Datentypen. Hierzu greift man auf das von NumPy
 zur Verfügung gestellte ``ndarray``-Objekt, also ein N-dimensionales Array, zurück.
+
+------------
+NumPy-Arrays
+------------
 
 Ein Array [#array]_ besitzt als wesentliche Bestandteile die Daten im eigentlichen Sinne, also die
 Werte der einzelnen Matrixelemente, sowie Information darüber, wie auf ein spezifisches
