@@ -6,11 +6,20 @@ In der Vorlesung »Einführung in das Programmieren für Physiker und Naturwisse
 wurde am Beispiel von NumPy und SciPy eine kurze Einführung in die Benutzung numerischer
 Programmbibliotheken gegeben. Dabei wurde an einigen wenigen Beispielen gezeigt, wie man
 in Python mit Vektoren und Matrizen arbeiten und einfache Problemstellungen der linearen
-Algebra lösen kann. Im Folgenden wollen wir uns etwas genauer mit NumPy beschäftigen ohne
-dabei eine vollständige Beschreibung anzustreben. Bei Bedarf sollte daher die
+Algebra lösen kann. Im Folgenden wollen wir uns etwas genauer mit NumPy beschäftigen, das
+die Basis für wichtige wissenschaftliche Programmbibliotheken bildet, wie das
+bereits genannte `SciPy <https://www.scipy.org>`_, `Matplotlib <http://matplotlib.org>`_
+für die Erstellung von Grafiken, `Pandas <http://pandas.pydata.org>`_ für
+die Analyse großer Datenmengen, `Scikit-image <http://scikit-image.org>`_ für die Bildbearbeitung,
+`Scikit-learn <http://scikit-learn.org>`_ für maschinenbasiertes Lernen und einige andere
+mehr.
+
+Wegen des großen Umfangs der von NumPy zur Verfügung gestellten Funktionalität
+werden wir uns auf wesentliche Aspekte beschränken und keine
+vollständige Beschreibung anstreben. Bei Bedarf sollte daher die
 `NumPy Referenzdokumentation <http://docs.scipy.org/doc/numpy/reference/>`_ herangezogen
 werden. Als Informationsquelle sind zudem die `Python Scientific Lecture Notes
-<http://scipy-lectures.github.com/>`_ empfehlenswert. Dort werden auch andere
+<http://scipy-lectures.github.com/>`_ empfehlenswert. Dort werden auch weitere
 Programmbibliotheken diskutiert, die in naturwissenschaftlichen Anwendungen hilfreich
 sein können.
 
