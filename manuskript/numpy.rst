@@ -261,6 +261,9 @@ Array.
 .. image:: images/numpy/strides.*
            :height: 10cm
 
+|frage| Wie verändern sich die *strides* in dem oben erzeugten 16-elementigen
+Array, wenn man einen ``shape`` von ``(2, 2, 2, 2)`` wählt?
+
 Für die Anwendung ist es wichtig zu wissen, dass die Manipulation der Attribute
 ``shape`` und ``strides`` nicht die Daten im Speicher verändert. Es wird also
 nur eine neue Sicht auf die vorhandenen Daten vermittelt. Dies ist insofern von
