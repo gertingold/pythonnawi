@@ -259,7 +259,8 @@ in dieser Dimension zu gelangen. Die folgende Abbildung zeigt dies an einem einf
 Array.
 
 .. image:: images/numpy/strides.*
-           :height: 10cm
+           :height: 8cm
+           :align: center
 
 |frage| Wie verändern sich die *strides* in dem oben erzeugten 16-elementigen
 Array, wenn man einen ``shape`` von ``(2, 2, 2, 2)`` wählt?
