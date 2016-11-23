@@ -53,10 +53,10 @@ zugreifen.
    Out[3]: 3.3
 
 Das Beispiel erklärt die doppelte Indizierung. Durch den ersten Index, hier ``[0]``, wird
-die erste Unterliste ausgewählt aus der wiederum ein einzelnes Element, hier das dritte,
-ausgewählt werden kann. Somit besteht hier, ganz im Gegensatz zu zweidimensionalen Matrizen,
-ein grundsätzlicher Unterschied zwischen Zeilen und Spalten. Eine Zeile kann man entweder
-wie oben in der Eingabe 2 erhalten oder auch etwas umständlicher mit
+die erste Unterliste ausgewählt, aus der wiederum ein einzelnes Element, hier das dritte,
+ausgewählt werden kann. 
+
+Eine Zeile kann man entweder wie oben in der Eingabe 2 erhalten oder auch etwas umständlicher mit
 
 .. sourcecode:: ipython
 
@@ -77,7 +77,7 @@ erste Unterliste. Wir erhalten also wiederum die erste Zeile und keineswegs die
 erste Spalte. Auch wenn es beispielsweise mit Hilfe einer list comprehension
 möglich ist, eine Spalte aus einer Matrix zu extrahieren, zeigt das Beispiel,
 dass Zeilen und Spalten in einer durch eine Liste dargestellten Matrix nicht in
-gleicher Weise behandelt werden können. Für eine Matrix würde man eine solche
+gleicher Weise behandelt werden können. Für eine Matrix würde man eine 
 Gleichbehandlung jedoch auf jeden Fall erwarten.
 
 Ein weiterer Nachteil besteht in der Flexibilität von Listen, die ja bekanntlich beliebige
@@ -131,7 +131,8 @@ folgendermaßen erhalten:
 
 Dabei wurde hier nur ein Teil der Ausgabe dargestellt. Gleich der erste Eintrag verrät
 uns, wie man aus einer Liste von Listen ein Array erzeugen kann. Details hierzu erhält
-man bei Bedarf wie üblich mit ``help(np.array)``.
+man bei Bedarf wie üblich mit ``help(np.array)`` oder alternativ mit
+``np.info(np.array)``.
 
 .. sourcecode:: ipython
 
@@ -150,7 +151,7 @@ man bei Bedarf wie üblich mit ``help(np.array)``.
    In [6]: type(myarray)
    Out[6]: numpy.ndarray
 
-Ein Array [#array]_ besitzt als wesentliche Bestandteile die Daten im
+Ein Array besitzt als wesentliche Bestandteile die Daten im
 eigentlichen Sinne, also die Werte der einzelnen Matrixelemente, sowie
 Information darüber, wie auf ein spezifisches Matrixelement zugegriffen werden
 kann. Die Daten sind im Speicher einfach hintereinander, also in
@@ -206,8 +207,8 @@ Schreibweise ansprechen. Zum Beispiel gibt
 
 .. sourcecode:: ipython
 
-   In [12]: matrix.nbytes
-   Out[12]: 128
+   In [11]: matrix.nbytes
+   Out[11]: 128
              
 den Speicherplatzbedarf des Arrays in Bytes an.
 
@@ -216,7 +217,7 @@ Integers verschiedener Länge (``int8``, ``int16``, ``int32``, ``int64``) oder
 auch ohne Vorzeichen (``uint8``, ...), Gleitkommazahlen (``float16``, ``float32``,
 ``float64``), komplexe Zahlen (``complex64``, ``complex128``), Wahrheitswerte
 (``bool8``) und sogar Unicode-Strings als nichtnumerischer Datentyp. Wenn der
-Datentyp nicht angeben ist oder durch die Konstruktion des Arrays bestimmt ist,
+Datentyp nicht angegeben oder durch die Konstruktion des Arrays bestimmt ist,
 werden die im jeweiligen System standardmäßig verwendeten Gleitkommazahlen
 herangezogen, also meistens ``float64``. Bei Integers ist zu beachten, dass
 es im Gegensatz zu Python-Integers wegen der endlichen Länge zu einem Überlauf
@@ -224,8 +225,8 @@ kommen kann, wie das folgende Beispiel demonstriert.
 
 .. sourcecode:: ipython
 
-   In [13]: np.arange(1, 160, 10, dtype=np.int8)
-   Out[13]:
+   In [12]: np.arange(1, 160, 10, dtype=np.int8)
+   Out[12]:
    array([   1,   11,   21,   31,   41,   51,   61,   71,   81,   91,  101,
            111,  121, -125, -115, -105], dtype=int8)
 
@@ -240,36 +241,41 @@ Elemente des Arrays erhalten bleibt. Wir wandeln das eindimensionale Array mit
 
 .. sourcecode:: ipython
 
-   In [14]: matrix.shape = (4, 4)
+   In [13]: matrix.shape = (4, 4)
 
-   In [15]: matrix
-   Out[15]: 
+   In [14]: matrix
+   Out[14]: 
    array([[ 0,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11],
           [12, 13, 14, 15]])
 
-   In [16]: matrix.strides
-   Out[16]: (32, 8)
+   In [15]: matrix.strides
+   Out[15]: (32, 8)
 
-Dabei wird deutlich, dass sich nicht nur die Form (``shape``) geändert hat, sondern
-aus aus dem Tupel ``(8,)`` des Attributs ``strides`` das Tupel ``(32, 8)`` wurde.
-Die *strides* geben an, um wieviel Bytes man weitergehen muss, um zu nächsten Element
-in dieser Dimension zu gelangen. Die folgende Abbildung zeigt dies an einem einfachen
-Array.
+Dabei wird deutlich, dass nicht nur die Form (``shape``) modifiziert wurde, sondern
+auch aus dem Tupel ``(8,)`` des Attributs ``strides`` [#strides]_ das Tupel ``(32, 8)`` wurde.
+Die *strides* geben an, um wieviel Bytes man weitergehen muss, um zum nächsten Element
+in dieser Dimension zu gelangen. Die folgende Abbildung zeigt dies an einem
+kleinen Array.
 
 .. image:: images/numpy/strides.*
            :height: 8cm
            :align: center
 
-|frage| Wie verändern sich die *strides* in dem oben erzeugten 16-elementigen
-Array, wenn man einen ``shape`` von ``(2, 2, 2, 2)`` wählt?
+Greifen wir speziell den mittleren Fall mit den *strides* ``(24, 8)`` heraus.
+Bewegt man sich in einer Zeile der Matrix von Element zu Element, so muss man 
+im Speicher jeweils um 8 Bytes weitergehen, wenn ein Datentyp ``int64``
+vorliegt. Entlang einer Spalte beträgt die Schrittweite dagegen 24 Bytes.
+
+|frage| Wie verändern sich die *strides* in dem 16-elementigen Array ``np.arange(16)``,
+wenn man einen ``shape`` von ``(2, 2, 2, 2)`` wählt?
 
 Für die Anwendung ist es wichtig zu wissen, dass die Manipulation der Attribute
 ``shape`` und ``strides`` nicht die Daten im Speicher verändert. Es wird also
 nur eine neue Sicht auf die vorhandenen Daten vermittelt. Dies ist insofern von
-Bedeutung als das Kopieren von größeren Datenmengen durchaus mit einem größeren
-Zeitaufwand verbunden sein kann.
+Bedeutung als das Kopieren von größeren Datenmengen durchaus mit einem nicht
+unerheblichen Zeitaufwand verbunden sein kann.
 
 Um uns davon zu überzeugen, dass tatsächlich kein neues Array erzeugt wird, generieren
 wir nochmals ein eindimensionales Array und daraus mit Hilfe von ``reshape`` ein
@@ -277,15 +283,15 @@ zweidimensionales Array.
 
 .. sourcecode:: ipython
 
-   In [17]: m1 = np.arange(16)
+   In [16]: m1 = np.arange(16)
 
-   In [18]: m1
-   Out[18]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+   In [17]: m1
+   Out[17]: array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
 
-   In [19]: m2 = m1.reshape(4, 4)
+   In [18]: m2 = m1.reshape(4, 4)
 
-   In [20]: m2
-   Out[20]: 
+   In [19]: m2
+   Out[19]: 
    array([[ 0,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11],
@@ -296,13 +302,13 @@ Tat fest, dass sich diese Änderung auch auf das zweidimensionale Array auswirkt
 
 .. sourcecode:: ipython
 
-   In [19]: m1[0] = 99
+   In [20]: m1[0] = 99
 
-   In [20]: m1
-   Out[20]: array([99,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+   In [21]: m1
+   Out[21]: array([99,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
    
-   In [21]: m2
-   Out[21]: 
+   In [22]: m2
+   Out[22]: 
    array([[99,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11],
@@ -314,18 +320,18 @@ vertauscht.
 
 .. sourcecode:: ipython
 
-   In [22]: m2.strides
-   Out[22]: (32, 8)
+   In [23]: m2.strides
+   Out[23]: (32, 8)
 
-   In [23]: m2.T
-   Out[23]: 
+   In [24]: m2.T
+   Out[24]: 
    array([[99,  4,  8, 12],
           [ 1,  5,  9, 13],
           [ 2,  6, 10, 14],
           [ 3,  7, 11, 15]])
 
-   In [24]: m2.T.strides
-   Out[24]: (8, 32)
+   In [25]: m2.T.strides
+   Out[25]: (8, 32)
 
 Obwohl die Daten im Speicher nicht verändert wurden, kann man jetzt mit der
 transponierten Matrix arbeiten. 
@@ -333,26 +339,26 @@ transponierten Matrix arbeiten.
 Mit Hilfe der Attribute ``shape`` und ``strides`` lässt sich die Sicht auf ein
 Array auf sehr flexible Weise festlegen. Allerdings ist der Benutzer selbst für
 die Folgen verantwortlich, wie der zweite Teil des folgenden Beispiels zeigt.
-Dazu gehen wir zum 4×4-Array zurück und verändern das Attribut ``strides`` mit
-Hilfe der ``as_strided``-Methode.
+Dazu gehen wir zu unserem ursprünglichen 4×4-Array zurück und verändern das
+Attribut ``strides`` mit Hilfe der ``as_strided``-Methode.
 
 .. sourcecode:: ipython
 
-   In [13]: matrix.shape = (4, 4)
+   In [26]: matrix = np.arange(16).reshape(4, 4)
 
-   In [14]: matrix1 = np.lib.stride_tricks.as_strided(matrix, strides=(16, 16))
+   In [27]: matrix1 = np.lib.stride_tricks.as_strided(matrix, strides=(16, 16))
 
-   In [15]: matrix1
-   Out[15]:
+   In [28]: matrix1
+   Out[28]:
    array([[ 0,  2,  4,  6],
           [ 2,  4,  6,  8],
           [ 4,  6,  8, 10],
           [ 6,  8, 10, 12]])
 
-   In [16]: matrix2 = np.lib.stride_tricks.as_strided(matrix, shape=(4, 4), strides=(16, 4))
+   In [29]: matrix2 = np.lib.stride_tricks.as_strided(matrix, shape=(4, 4), strides=(16, 4))
 
-   In [17]: matrix2
-   Out[17]: 
+   In [30]: matrix2
+   Out[30]: 
    array([[            0,  4294967296,            1,  8589934592],
           [            2, 12884901888,            3, 17179869184],
           [            4, 21474836480,            5, 25769803776],
@@ -1351,6 +1357,7 @@ um mehr als einen Faktor 3 schneller.
             aus NumPy zu bezeichnen. Ein Grund dafür, nicht von Matrizen zu sprechen, besteht darin,
             dass sich Arrays nicht notwendigerweise wie Matrizen verhalten. So entspricht das Produkt
             von zwei Arrays im Allgemeinen nicht dem Matrixprodukt.
+.. [#strides] Das englische Wort *stride* bedeutet Schritt.
 .. [#sph_harm] Im ``scipy``-Modul sind die Winkel im Vergleich zur üblichen Konvention gerade vertauscht
             benannt (siehe auch die `Dokumentation zur Funktion sph_harm <http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.sph_harm.html#scipy.special.sph_harm>`_).
 .. [#hermitesch] Eine hermitesche Matrix geht beim Transponieren in die konjugiert komplexe Matrix über:
