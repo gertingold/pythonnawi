@@ -29,6 +29,8 @@ verloren. In einem solchen Fall ist es sinnvoll, die Erzeugung von Daten und
 Grafiken zu trennen. Zumindest sollte man aber die Daten nach ihrer Erzeugung in
 einer Datei sichern.
 
+.. _mpl:
+
 ======================================
 Erstellung von Grafiken mit matplotlib
 ======================================

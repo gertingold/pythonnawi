@@ -386,8 +386,8 @@ Erzeugung von NumPy-Arrays
 
 NumPy-Arrays lassen sich je nach Bedarf auf verschiedene Arten erzeugen. Die
 Basis bildet die ``ndarray``-Methode, auf die man immer zurückgreifen kann.
-In den meisten Fällen wird es aber praktischer sein, auf angepasstere Methoden
-zurückgreifen, die wir im Folgenden besprechen wollen. 
+In den meisten Fällen wird es aber praktischer sein, eine der spezialisierteren
+Methoden zu verwenden, die wir im Folgenden besprechen wollen. 
 
 Um ein mit Nullen aufgefülltes 2×2-Array zu erzeugen, geht man folgendermaßen
 vor:
@@ -399,11 +399,11 @@ vor:
    In [2]: matrix1, matrix1.dtype
    Out[2]: 
    (array([[ 0.,  0.],
-          [ 0.,  0.]]), dtype('float64'))
+           [ 0.,  0.]]), dtype('float64'))
 
 Das Tupel im Argument gibt dabei die Form des Arrays vor. Wird der Datentyp der
 Einträge nicht weiter spezifiziert, so werden Gleitkommazahlen mit einer Länge
-von 8 Byte verwendet. Man kann aber auch explizit zum Beispiel Integereinträge
+von 8 Bytes verwendet. Man kann aber auch explizit zum Beispiel Integereinträge
 verlangen:
 
 .. sourcecode:: ipython
@@ -413,14 +413,30 @@ verlangen:
    array([[0, 0],
           [0, 0]])
 
+Neben der ``zeros``-Funktion gibt es auch noch die ``empty``-Funktion, die zwar
+den benötigten Speicherplatz zur Verfügung stellt, diesen jedoch nicht initialisiert.
+Im Allgemeinen werden also die Arrayelemente von den hier im Beispiel gezeigten
+abweichen.
+
+.. sourcecode:: ipython
+
+   In [4]: np.empty((3, 3))
+   Out[4]: 
+   array([[  6.91153891e-310,   2.32617410e-316,   6.91153265e-310],
+          [  6.91153265e-310,   6.91153265e-310,   6.91153265e-310],
+          [  6.91153265e-310,   6.91153265e-310,   3.95252517e-322]])
+
+Die ``empty``-Funktion sollte also nur verwendet werden, wenn die Arrayelemente
+später noch belegt werden.
+
 Will man alle Elemente eines Arrays mit einem konstanten Wert ungleich Null
 füllen, so kann man ``ones`` verwenden und das sich ergebende Array mit einem
 Faktor multiplizieren.
 
 .. sourcecode:: ipython
 
-   In [4]: 2*np.ones((2, 3))
-   Out[4]: 
+   In [5]: 2*np.ones((2, 3))
+   Out[5]: 
    array([[ 2.,  2.,  2.],
           [ 2.,  2.,  2.]])
 
@@ -429,8 +445,8 @@ erhält:
 
 .. sourcecode:: ipython
 
-   In [5]: np.identity(3)
-   Out[5]: 
+   In [6]: np.identity(3)
+   Out[6]: 
    array([[ 1.,  0.,  0.],
           [ 0.,  1.,  0.],
           [ 0.,  0.,  1.]])
@@ -441,8 +457,8 @@ sondern auch die Diagonale nach oben oder unten verschieben lässt.
 
 .. sourcecode:: ipython
 
-   In [6]: np.eye(2, 4)
-   Out[6]: 
+   In [7]: np.eye(2, 4)
+   Out[7]: 
    array([[ 1.,  0.,  0.,  0.],
           [ 0.,  1.,  0.,  0.]])
 
@@ -453,24 +469,53 @@ Diagonaleinträge verschieben, so gibt man dies mit Hilfe des Parameters ``k`` a
 
 .. sourcecode:: ipython
 
-   In [7]: np.eye(4, k=1)-np.eye(4, k=-1)
-   Out[7]: 
+   In [8]: np.eye(4, k=1)-np.eye(4, k=-1)
+   Out[8]: 
    array([[ 0.,  1.,  0.,  0.],
           [-1.,  0.,  1.,  0.],
           [ 0., -1.,  0.,  1.],
           [ 0.,  0., -1.,  0.]])
 
-Hat man, wie zu Beginn des vorigen Abschnitts beschrieben, eine Matrix in Form
-einer Liste mit Unterlisten vorliegen, so kann man diese in ein Array umwandeln:
+Eine Diagonalmatrix mit unterschiedlichen Einträgen lässt sich aus einem
+eindimensionalen Array folgendermaßen erzeugen:
 
 .. sourcecode:: ipython
 
-   In [8]: np.array([[1, 2], [3, 4]])
-   Out[8]: 
-   array([[1, 2],
-          [3, 4]])
+   In [9]: np.diag([1, 2, 3, 4])
+   Out[9]: 
+   array([[1, 0, 0, 0],
+          [0, 2, 0, 0],
+          [0, 0, 3, 0],
+          [0, 0, 0, 4]])
 
-Dies geht zum Beispiel auch, wenn man statt Listen Tupel vorliegen hat.
+Dabei lässt sich wie bei der ``eye``-Funktion die Diagonale verschieben.
+
+.. sourcecode:: ipython
+
+   In [10]: np.diag([1, 2, 3, 4], k=1)
+   Out[10]: 
+   array([[0, 1, 0, 0, 0],
+          [0, 0, 2, 0, 0],
+          [0, 0, 0, 3, 0],
+          [0, 0, 0, 0, 4],
+          [0, 0, 0, 0, 0]])
+
+Umgekehrt kann man mit der ``diag``-Funktion auch die Diagonalelemente eines
+zweidimensionalen Arrays extrahieren.
+
+.. sourcecode:: ipython
+
+   In [11]: matrix = np.arange(16).reshape(4, 4)
+   
+   In [12]: matrix
+   Out[12]: 
+   array([[ 0,  1,  2,  3],
+          [ 4,  5,  6,  7],
+          [ 8,  9, 10, 11],
+          [12, 13, 14, 15]])
+   
+   In [13]: np.diag(matrix)
+   Out[13]: array([ 0,  5, 10, 15])
 
 Lassen sich die Arrayeinträge als Funktion der Indizes ausdrücken, so kann
 man die ``fromfunction``-Funktion verwenden, wie in dem folgenden Beispiel
@@ -478,8 +523,8 @@ zu sehen ist, das eine Multiplikationstabelle erzeugt.
 
 .. sourcecode:: ipython
 
-   In [9]: np.fromfunction(lambda i, j: (i+1)*(j+1), (6, 6), dtype=np.int)
-   Out[9]: 
+   In [14]: np.fromfunction(lambda i, j: (i+1)*(j+1), (6, 6), dtype=np.int)
+   Out[14]: 
    array([[ 1,  2,  3,  4,  5,  6],
           [ 2,  4,  6,  8, 10, 12],
           [ 3,  6,  9, 12, 15, 18],
@@ -492,73 +537,108 @@ Diese Funktion ist nicht auf zweidimensionale Arrays beschränkt.
 Bei der Konstruktion von Arrays sind auch Funktionen interessant, die als
 Verallgemeinerung der in Python eingebauten Funktion ``range`` angesehen werden
 können. Ihr Nutzen ergibt sich vor allem aus der Tatsache, dass man gewissen
-Funktionen, den universellen Funktionen oder ufuncs in NumPy, die wir später
-noch besprechen werden, ganze Arrays als Argumente übergeben kann. Damit wird
-eine besonders effiziente Auswertung dieser Funktionen möglich. 
+Funktionen, den universellen Funktionen oder ufuncs in NumPy, die wir im
+Abschnitt :ref:`ufuncs` besprechen werden, ganze Arrays als Argumente übergeben
+kann. Damit wird eine besonders effiziente Auswertung dieser Funktionen
+möglich. 
 
 Eindimensionale Arrays lassen sich mit Hilfe von ``arange``, ``linspace`` und
 ``logspace`` erzeugen:
 
 .. sourcecode:: ipython
 
-   In [10]: np.arange(1, 2, 0.1)
-   Out[10]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6,  1.7,  1.8,  1.9])
-
-   In [11]: np.linspace(1, 2, 11)
-   Out[11]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6,  1.7,  1.8,  1.9,  2. ])
-
-   In [12]: np.linspace(1, 2, 4, retstep=True)
-   Out[12]: 
-   (array([ 1.        ,  1.33333333,  1.66666667,  2.        ]),
-    0.3333333333333333)
-
-   In [13]: np.logspace(0, 3, 6)
-   Out[13]: 
-   array([    1.        ,     3.98107171,    15.84893192,    63.09573445,
-            251.18864315,  1000.        ])
-
-   In [14]: np.logspace(0, 3, 4, base=2)
-   Out[14]: array([ 1.,  2.,  4.,  8.])
+   In [15]: np.arange(1, 2, 0.1)
+   Out[15]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6,  1.7,  1.8,  1.9])
 
 Ähnlich wie bei ``range`` erzeugt ``arange`` aus der Angabe eines Start- und
 eines Endwerts sowie einer Schrittweite eine Folge von Werten. Allerdings
 können diese auch Gleitkommazahlen sein. Zudem wird statt einer Liste ein Array
-erzeugt. Wie bei ``range`` ist der Endwert hierin nicht enthalten.
+erzeugt. Wie bei ``range`` ist der Endwert hierin nicht enthalten. Allerdings
+können Rundungsfehler zu unerwarteten Effekten führen.
 
-Häufig möchte man aber statt einer Schrittweite eine Anzahl von Punkten
-vorgeben. Dafür ist ``linspace`` eine geeignete Funktion, sofern die
-Schrittweite konstant sein soll. Bei Bedarf kann man sich neben dem Array auch
-noch die Schrittweite ausgeben lassen. Benötigt man eine logarithmische Skala,
-so verwendet man ``logspace``, das den Exponenten linear zwischen einem Start-
-und einem Endwert verändert. Die Basis ist standardmäßig 10, sie kann aber durch
-Setzen des Parameters ``base`` an spezielle Erfordernisse angepasst werden.
+.. sourcecode:: ipython
+
+   In [16]: np.arange(1, 1.5, 0.1)
+   Out[16]: array([ 1. ,  1.1,  1.2,  1.3,  1.4])
+   
+   In [17]: np.arange(1, 1.6, 0.1)
+   Out[17]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6])
+   
+   In [18]: np.arange(1, 1.601, 0.1)
+   Out[18]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6])
+
+Dieses Problem kann man umgehen, wenn man statt der Schrittweite eine Anzahl
+von Punkten in dem gegebenen Intervall vorgibt. Dafür ist ``linspace`` eine
+geeignete Funktion, sofern die Schrittweite konstant sein soll. Bei Bedarf kann
+man sich neben dem Array auch noch die Schrittweite ausgeben lassen. Benötigt
+man eine logarithmische Skala, so verwendet man ``logspace``, das den
+Exponenten linear zwischen einem Start- und einem Endwert verändert. Die Basis
+ist standardmäßig 10, sie kann aber durch Setzen des Parameters ``base`` an
+spezielle Erfordernisse angepasst werden.
+
+.. sourcecode:: ipython
+
+   In [19]: np.linspace(1, 2, 11)
+   Out[19]: array([ 1. ,  1.1,  1.2,  1.3,  1.4,  1.5,  1.6,  1.7,  1.8,  1.9,  2. ])
+
+   In [20]: np.linspace(1, 2, 4, retstep=True)
+   Out[20]: 
+   (array([ 1.        ,  1.33333333,  1.66666667,  2.        ]),
+    0.3333333333333333)
+
+   In [21]: np.logspace(0, 3, 6)
+   Out[21]: 
+   array([    1.        ,     3.98107171,    15.84893192,    63.09573445,
+            251.18864315,  1000.        ])
+
+   In [22]: np.logspace(0, 3, 4, base=2)
+   Out[22]: array([ 1.,  2.,  4.,  8.])
+
+Gerade bei der graphischen Darstellung von Funktionen sind ``linspace``
+und ``logspace`` besonders nützlich. Im folgenden Beispiel verwenden
+wir die matplotlib-Bibliothek, die im Abschnitt :ref:`mpl` besprochen wird.
+
+.. sourcecode:: ipython
+
+   In [23]: import matplotlib.pyplot as plt
+   
+   In [24]: x = np.linspace(0, 2*np.pi)
+   
+   In [25]: y = np.sin(x)
+   
+   In [26]: plt.plot(x, y)
+   Out[26]: [<matplotlib.lines.Line2D at 0x7f3ad50b76a0>]
+
+.. image:: images/numpy/mpl_1.png
+           :height: 5cm
+           :align: center
 
 Möchte man eine Funktion auf einem Gitter auswerten und benötigt man dazu
 separate Arrays für die x- und y-Werte, so hilft ``meshgrid`` weiter.
 
 .. sourcecode:: ipython
 
-   In [15]: xvals, yvals = np.meshgrid([-1, 0, 1], [2, 3, 4])
+   In [27]: xvals, yvals = np.meshgrid([-1, 0, 1], [2, 3, 4])
 
-   In [16]: xvals
-   Out[16]: 
+   In [28]: xvals
+   Out[28]: 
    array([[-1,  0,  1],
           [-1,  0,  1],
           [-1,  0,  1]])
 
-   In [17]: yvals
-   Out[17]: 
+   In [29]: yvals
+   Out[29]: 
    array([[2, 2, 2],
           [3, 3, 3],
           [4, 4, 4]])
 
 In diesem Zusammenhang sind auch die Funktionen ``mgrid`` und ``ogrid`` von
-Interesse, die wir besprechen werden, wenn wir die Adressierung von Arrays
-genauer angesehen haben.
+Interesse, die wir im Abschnitt :ref:`ufuncs` besprechen  werden, nachdem wir die
+Adressierung von Arrays genauer angesehen haben.
 
-Abschließend wollen wir noch kurz andeuten, wie man ein Array durch Einlesen
-von Daten aus einer Datei erhalten kann. Die Datei heiße ``x_von_t.dat``
-und habe den folgenden Inhalt::
+Zur graphischen Darstellung von Daten ist es häufig erforderlich, die Daten
+zunächst aus einer Datei einzulesen und in einem Array zu speichern. Neben wir
+an, wir hätten eine Datei ``x_von_t.dat`` mit folgendem Inhalt::
 
    # Zeit  Ort
       0.0  0.0
@@ -572,8 +652,8 @@ Verwendung von ``loadtxt`` kann man die Daten nun einlesen:
 
 .. sourcecode:: ipython
 
-   In [18]: np.loadtxt("x_von_t.dat")
-   Out[18]: 
+   In [30]: np.loadtxt("x_von_t.dat")
+   Out[30]: 
    array([[ 0. ,  0. ],
           [ 0.1,  0.1],
           [ 0.2,  0.4],
@@ -586,6 +666,74 @@ Datei zu entnehmen oder mit fehlenden Einträgen umzugehen. Für Details wird au
 die `zugehörige Dokumentation
 <http://docs.scipy.org/doc/numpy/reference/generated/numpy.genfromtxt.html>`_
 verwiesen.
+
+Abschließend betrachten wir noch kurz die Erzeugung von Zufallszahlen, die man
+zum Beispiel für Simulationszwecke benötigt. Statt viele einzelne Zufallszahlen zu
+erzeugen ist es häufig effizienter, gleich ein ganzes Array mit Zufallszahlen
+zu füllen. Im folgenden Beispiel erzeugen wir ein Array mit zehn im Intervall zwischen
+0 und 1 gleich verteilten Pseudozufallszahlen. Reproduzierbar werden die Zahlenwerte,
+wenn zunächst ein Startwert für die Berechnung, ein *seed*, gesetzt wird.
+
+.. sourcecode:: ipython
+
+   In [31]: np.random.rand(2, 5)
+   Out[31]:
+   array([[ 0.99281469,  0.90376223,  0.81096671,  0.33726814,  0.34463236],
+          [ 0.74234766,  0.05862623,  0.49005243,  0.73496906,  0.21421244]])
+   
+   In [32]: np.random.rand(2, 5)
+   Out[32]:
+   array([[ 0.51071925,  0.11952145,  0.12714712,  0.98081263,  0.05736099],
+          [ 0.35101524,  0.86407263,  0.80264858,  0.36629556,  0.59562485]])
+   
+   In [33]: np.random.seed(1234)
+   
+   In [34]: np.random.rand(2, 5)
+   Out[34]:
+   array([[ 0.19151945,  0.62210877,  0.43772774,  0.78535858,  0.77997581],
+          [ 0.27259261,  0.27646426,  0.80187218,  0.95813935,  0.87593263]])
+   
+   In [35]: np.random.rand(2, 5)
+   Out[35]:
+   array([[ 0.19151945,  0.62210877,  0.43772774,  0.78535858,  0.77997581],
+          [ 0.27259261,  0.27646426,  0.80187218,  0.95813935,  0.87593263]])
+
+Die Zufälligkeit der Daten lässt sich graphisch darstellen.
+
+.. sourcecode:: ipython
+
+   In [36]: data = np.random.rand(20, 20)
+   
+   In [37]: plt.imshow(data, cmap=plt.cm.hot, interpolation='none')
+   Out[37]: <matplotlib.image.AxesImage at 0x7f4eacf147b8>
+   
+   In [38]: plt.colorbar()
+   Out[38]: <matplotlib.colorbar.Colorbar at 0x7f4eac6a60f0>
+
+.. image:: images/numpy/mpl_2.png
+           :height: 5cm
+           :align: center
+
+Als Anwendung betrachten wir drei Realisierungen von hundert Würfen eines
+Würfels. Dazu erzeugen wir mit ``randint(1, 7)`` ganzzahlige Pseudozufallszahlen
+zwischen 1 und 6 in einem zweidimensionalen Array der Form ``(100, 3)``. Diese
+drei Spalten zu je 100 Zahlen werden jeweils als Histogramm dargestellt.
+
+.. sourcecode:: ipython
+
+   In [14]: wuerfe = np.random.randint(1, 7, (100, 3))
+   
+   In [15]: plt.hist(wuerfe, np.linspace(0.5, 6.5, 7))
+   Out[15]: 
+   ([array([ 14.,  22.,  16.,  12.,  16.,  20.]),
+     array([ 20.,  18.,  17.,  14.,  14.,  17.]),
+     array([ 12.,  13.,  24.,  16.,  18.,  17.])],
+    array([ 0.5,  1.5,  2.5,  3.5,  4.5,  5.5,  6.5]),
+    <a list of 3 Lists of Patches objects>)
+
+.. image:: images/numpy/mpl_3.png
+           :height: 5cm
+           :align: center
 
 -----------------------------
 Adressierung von NumPy-Arrays
@@ -607,25 +755,25 @@ für NumPy-Arrays wie die folgenden Beispiele zeigen.
 
 .. sourcecode:: ipython
 
-   In [19]: a = np.arange(10)
+   In [1]: a = np.arange(10)
 
-   In [20]: a
-   Out[20]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+   In [2]: a
+   Out[2]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-   In [21]: a[:]
-   Out[21]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+   In [3]: a[:]
+   Out[3]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-   In [22]: a[::2]
-   Out[22]: array([0, 2, 4, 6, 8])
+   In [4]: a[::2]
+   Out[4]: array([0, 2, 4, 6, 8])
 
-   In [23]: a[1:4]
-   Out[23]: array([1, 2, 3])
+   In [5]: a[1:4]
+   Out[5]: array([1, 2, 3])
 
-   In [24]: a[6:-2]
-   Out[24]: array([6, 7])
+   In [6]: a[6:-2]
+   Out[6]: array([6, 7])
 
-   In [25]: a[::-1]
-   Out[25]: array([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
+   In [7]: a[::-1]
+   Out[7]: array([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
 
 Für mehrdimensionale Arrays wird die Notation direkt verallgemeinert. Im Gegensatz
 zu der im Abschnitt :ref:`pythonlisten` beschriebenen Notation für Listen von Listen
@@ -634,10 +782,10 @@ Beispiele für zweidimensionale Arrays sollen das illustrieren.
 
 .. sourcecode:: ipython
 
-   In [26]: a = np.arange(36).reshape(6, 6)
+   In [8]: a = np.arange(36).reshape(6, 6)
 
-   In [27]: a
-   Out[27]: 
+   In [9]: a
+   Out[9]: 
    array([[ 0,  1,  2,  3,  4,  5],
           [ 6,  7,  8,  9, 10, 11],
           [12, 13, 14, 15, 16, 17],
@@ -645,8 +793,8 @@ Beispiele für zweidimensionale Arrays sollen das illustrieren.
           [24, 25, 26, 27, 28, 29],
           [30, 31, 32, 33, 34, 35]])
 
-   In [28]: a[:, :]
-   Out[28]: 
+   In [10]: a[:, :]
+   Out[10]: 
    array([[ 0,  1,  2,  3,  4,  5],
           [ 6,  7,  8,  9, 10, 11],
           [12, 13, 14, 15, 16, 17],
@@ -654,29 +802,29 @@ Beispiele für zweidimensionale Arrays sollen das illustrieren.
           [24, 25, 26, 27, 28, 29],
           [30, 31, 32, 33, 34, 35]])
 
-   In [29]: a[2:4, 2:4]
-   Out[29]: 
+   In [11]: a[2:4, 2:4]
+   Out[11]: 
    array([[14, 15],
           [20, 21]])
 
-   In [30]: a[2:4, 3:5]
-   Out[30]: 
+   In [12]: a[2:4, 3:5]
+   Out[12]: 
    array([[15, 16],
           [21, 22]])
 
-   In [31]: a[::2, ::2]
-   Out[31]: 
+   In [13]: a[::2, ::2]
+   Out[13]: 
    array([[ 0,  2,  4],
           [12, 14, 16],
           [24, 26, 28]])
 
-   In [32]: a[2::2, ::2]
-   Out[32]: 
+   In [14]: a[2::2, ::2]
+   Out[14]: 
    array([[12, 14, 16],
           [24, 26, 28]])
 
-   In [33]: a[2:4]
-   Out[33]: 
+   In [15]: a[2:4]
+   Out[15]: 
    array([[12, 13, 14, 15, 16, 17],
           [18, 19, 20, 21, 22, 23]])
 
@@ -689,8 +837,8 @@ so hat man zwei verschiedene Möglichkeiten:
 
 .. sourcecode:: ipython
 
-   In [34]: a[:, 0:1]
-   Out[34]: 
+   In [16]: a[:, 0:1]
+   Out[16]: 
    array([[ 0],
           [ 6],
           [12],
@@ -698,8 +846,8 @@ so hat man zwei verschiedene Möglichkeiten:
           [24],
           [30]])
 
-   In [35]: a[:, 0]
-   Out[35]: array([ 0,  6, 12, 18, 24, 30])
+   In [17]: a[:, 0]
+   Out[17]: array([ 0,  6, 12, 18, 24, 30])
 
 Im ersten Fall sorgt die für beide Dimensionen vorhandene Indexnotation dafür,
 dass ein zweidimensionales Array erzeugt wird, das die Elemente der ersten
@@ -717,23 +865,23 @@ unten, von links nach rechts oder über alle Elemente.
 
 .. sourcecode:: ipython
 
-   In [36]: a.sum(axis=0)
-   Out[36]: array([ 90,  96, 102, 108, 114, 120])
+   In [18]: a.sum(axis=0)
+   Out[18]: array([ 90,  96, 102, 108, 114, 120])
 
-   In [37]: a.sum(axis=1)
-   Out[37]: array([ 15,  51,  87, 123, 159, 195])
+   In [19]: a.sum(axis=1)
+   Out[19]: array([ 15,  51,  87, 123, 159, 195])
 
-   In [38]: a.sum()
-   Out[38]: 630
+   In [20]: a.sum()
+   Out[20]: 630
 
 Zur Verdeutlichung betrachten wir noch ein dreidimensionales Array.
 
 .. sourcecode:: ipython
 
-   In [39]: b = np.arange(27).reshape(3, 3, 3)
+   In [21]: b = np.arange(27).reshape(3, 3, 3)
 
-   In [40]: b
-   Out[40]: 
+   In [22]: b
+   Out[22]: 
    array([[[ 0,  1,  2],
            [ 3,  4,  5],
            [ 6,  7,  8]],
@@ -746,22 +894,22 @@ Zur Verdeutlichung betrachten wir noch ein dreidimensionales Array.
            [21, 22, 23],
            [24, 25, 26]]])
 
-   In [41]: b[0:1]
-   Out[41]: 
+   In [23]: b[0:1]
+   Out[23]: 
    array([[[0, 1, 2],
            [3, 4, 5],
            [6, 7, 8]]])
 
-   In [42]: b[:, 0:1]
-   Out[42]: 
+   In [24]: b[:, 0:1]
+   Out[24]: 
    array([[[ 0,  1,  2]],
 
           [[ 9, 10, 11]],
 
           [[18, 19, 20]]])
 
-   In [43]: b[:, :, 0:1]
-   Out[43]: 
+   In [25]: b[:, :, 0:1]
+   Out[25]: 
    array([[[ 0],
            [ 3],
            [ 6]],
@@ -774,8 +922,8 @@ Zur Verdeutlichung betrachten wir noch ein dreidimensionales Array.
            [21],
            [24]]])
 
-   In [44]: b[..., 0:1]
-   Out[44]: 
+   In [26]: b[..., 0:1]
+   Out[26]: 
    array([[[ 0],
            [ 3],
            [ 6]],
@@ -806,21 +954,21 @@ verschiedene zweidimensionale Arrays konstruiert werden können.
 
 .. sourcecode:: ipython
 
-   In [45]: c = np.arange(5)
+   In [27]: c = np.arange(5)
 
-   In [46]: c
-   Out[46]: array([0, 1, 2, 3, 4])
+   In [28]: c
+   Out[28]: array([0, 1, 2, 3, 4])
 
-   In [47]: c[:, np.newaxis]
-   Out[47]: 
+   In [29]: c[:, np.newaxis]
+   Out[29]: 
    array([[0],
           [1],
           [2],
           [3],
           [4]])
 
-   In [48]: c[np.newaxis, :]
-   Out[48]: array([[0, 1, 2, 3, 4]])
+   In [30]: c[np.newaxis, :]
+   Out[30]: array([[0, 1, 2, 3, 4]])
 
 Eine Anwendung hiervon werden wir weiter unten in diesem Kapitel kennenlernen, wenn wir
 uns mit der Erweiterung von Arrays auf eine Zielgröße, dem so genannten *broadcasting*
@@ -840,13 +988,13 @@ eindimensionalen Array ausgehen.
 
 .. sourcecode:: ipython
 
-   In [49]: a = np.arange(10, 20)
+   In [31]: a = np.arange(10, 20)
 
-   In [50]: a[[0, 3, 0, 5]]
-   Out[50]: array([10, 13, 10, 15])
+   In [32]: a[[0, 3, 0, 5]]
+   Out[32]: array([10, 13, 10, 15])
 
-   In [51]: a[np.array([[0, 2], [1, 4]])]
-   Out[51]: 
+   In [33]: a[np.array([[0, 2], [1, 4]])]
+   Out[33]: 
    array([[10, 12],
           [11, 14]])
 
@@ -859,23 +1007,23 @@ weitere Indexlisten oder -arrays angeben.
 
 .. sourcecode:: ipython
 
-   In [52]: a = np.arange(16).reshape(4, 4)
+   In [34]: a = np.arange(16).reshape(4, 4)
 
-   In [53]: a
-   Out[53]: 
+   In [35]: a
+   Out[35]: 
    array([[ 0,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11],
           [12, 13, 14, 15]])
 
-   In [54]: a[[0, 1, 2]]
-   Out[54]: 
+   In [36]: a[[0, 1, 2]]
+   Out[36]: 
    array([[ 0,  1,  2,  3],
           [ 4,  5,  6,  7],
           [ 8,  9, 10, 11]])
 
-   In [55]: a[[0, 1, 2], [1, 2, 3]]
-   Out[55]: array([ 1,  6, 11])
+   In [37]: a[[0, 1, 2], [1, 2, 3]]
+   Out[37]: array([ 1,  6, 11])
 
 Interessant ist die Verwendung von Indexarrays mit Elementen vom Typ *Boolean*.
 Ein solches Indexarray lässt sich zum Beispiel mit Hilfe einer logischen Operation
@@ -924,13 +1072,13 @@ sind daher äquivalent:
 
 .. sourcecode:: ipython
 
-   In [56]: a = np.arange(5)
+   In [38]: a = np.arange(5)
 
-   In [57]: a*3
-   Out[57]: array([ 0,  3,  6,  9, 12])
+   In [39]: a*3
+   Out[39]: array([ 0,  3,  6,  9, 12])
 
-   In [58]: a*np.array([3, 3, 3, 3, 3])
-   Out[58]: array([ 0,  3,  6,  9, 12])
+   In [40]: a*np.array([3, 3, 3, 3, 3])
+   Out[40]: array([ 0,  3,  6,  9, 12])
 
 *Broadcasting* ist genau dann möglich, wenn beim Vergleich der Achsen der
 beiden beteiligten Arrays von der letzten Achse beginnend die Länge der Achsen
@@ -942,23 +1090,23 @@ Beispiel.
 
 .. sourcecode:: ipython
 
-   In [59]: a = np.arange(20).reshape(4, 5)
+   In [41]: a = np.arange(20).reshape(4, 5)
 
-   In [60]: a
-   Out[60]: 
+   In [42]: a
+   Out[42]: 
    array([[ 0,  1,  2,  3,  4],
           [ 5,  6,  7,  8,  9],
           [10, 11, 12, 13, 14],
           [15, 16, 17, 18, 19]])
 
-   In [61]: a*np.arange(5)
-   Out[61]: 
+   In [43]: a*np.arange(5)
+   Out[43]: 
    array([[ 0,  1,  4,  9, 16],
           [ 0,  6, 14, 24, 36],
           [ 0, 11, 24, 39, 56],
           [ 0, 16, 34, 54, 76]])
 
-   In [62]: a*np.arange(4)
+   In [44]: a*np.arange(4)
    ---------------------------------------------------------------------------
    ValueError                                Traceback (most recent call last)
 
@@ -973,8 +1121,8 @@ Array hätte folgendes Aussehen:
 
 .. sourcecode:: ipython
 
-   In [63]: np.ones(shape=(4, 5), dtype=int)*np.arange(5)
-   Out[63]: 
+   In [45]: np.ones(shape=(4, 5), dtype=int)*np.arange(5)
+   Out[45]: 
    array([[0, 1, 2, 3, 4],
           [0, 1, 2, 3, 4],
           [0, 1, 2, 3, 4],
@@ -988,24 +1136,26 @@ die Länge 1 besitzt. Dies können wir mit Hilfe von ``newaxis`` erreichen:
 
 .. sourcecode:: ipython
 
-   In [64]: b = np.arange(4)[:, np.newaxis]
+   In [46]: b = np.arange(4)[:, np.newaxis]
 
-   In [65]: b
-   Out[65]: 
+   In [47]: b
+   Out[47]: 
    array([[0],
           [1],
           [2],
           [3]])
 
-   In [66]: b.shape
-   Out[66]: (4, 1)
+   In [48]: b.shape
+   Out[48]: (4, 1)
 
-   In [67]: a*b
-   Out[67]: 
+   In [49]: a*b
+   Out[49]: 
    array([[ 0,  0,  0,  0,  0],
           [ 5,  6,  7,  8,  9],
           [20, 22, 24, 26, 28],
           [45, 48, 51, 54, 57]])
+
+.. _ufuncs:
 
 ----------------------
 Universelle Funktionen
