@@ -859,9 +859,16 @@ In einigen NumPy-Methoden gibt es einen Parameter ``axis``, der die Richtung
 in dem Array angibt, in der die Methode ausgeführt werden soll. Die Achsennummer
 ergibt sich aus der Position der zugehörigen Indexangabe. Wie man aus den obigen
 Beispielen entnehmen kann, verläuft die Achse 0 von oben nach unten, während die
-Achse 1 von links nach rechts verläuft. Das Aufsummieren von Elementen unserer
-Beispielmatrix erfolgt dann mit Hilfe der ``sum``-Methode entweder von oben nach
-unten, von links nach rechts oder über alle Elemente.
+Achse 1 von links nach rechts verläuft. Dies wird auch durch die folgende
+Abbildung veranschaulicht.
+
+.. image:: images/numpy/axes.*
+           :height: 3cm
+           :align: center
+
+Das Aufsummieren von Elementen unserer Beispielmatrix erfolgt dann mit Hilfe
+der ``sum``-Methode entweder von oben nach unten, von links nach rechts oder
+über alle Elemente.
 
 .. sourcecode:: ipython
 
@@ -874,67 +881,58 @@ unten, von links nach rechts oder über alle Elemente.
    In [20]: a.sum()
    Out[20]: 630
 
-Zur Verdeutlichung betrachten wir noch ein dreidimensionales Array.
+Zur Verdeutlichung betrachten wir noch ein dreidimensionales Array das im
+Folgenden graphisch dargestellt ist.
+
+.. image:: images/numpy/array3d.*
+           :height: 5cm
+           :align: center
 
 .. sourcecode:: ipython
 
-   In [21]: b = np.arange(27).reshape(3, 3, 3)
+   In [21]: b = np.arange(24).reshape(2, 3, 4)
 
    In [22]: b
    Out[22]: 
-   array([[[ 0,  1,  2],
-           [ 3,  4,  5],
-           [ 6,  7,  8]],
-
-          [[ 9, 10, 11],
-           [12, 13, 14],
-           [15, 16, 17]],
-
-          [[18, 19, 20],
-           [21, 22, 23],
-           [24, 25, 26]]])
+   array([[[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11]],
+   
+          [[12, 13, 14, 15],
+           [16, 17, 18, 19],
+           [20, 21, 22, 23]]]) 
 
    In [23]: b[0:1]
-   Out[23]: 
-   array([[[0, 1, 2],
-           [3, 4, 5],
-           [6, 7, 8]]])
+   Out[23]:
+   array([[[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11]]])
 
    In [24]: b[:, 0:1]
-   Out[24]: 
-   array([[[ 0,  1,  2]],
-
-          [[ 9, 10, 11]],
-
-          [[18, 19, 20]]])
+   Out[24]:
+   array([[[ 0,  1,  2,  3]],
+   
+          [[12, 13, 14, 15]]]) 
 
    In [25]: b[:, :, 0:1]
-   Out[25]: 
+   Out[25]:
    array([[[ 0],
-           [ 3],
-           [ 6]],
-
-          [[ 9],
-           [12],
-           [15]],
-
-          [[18],
-           [21],
-           [24]]])
+           [ 4],
+           [ 8]],
+   
+          [[12],
+           [16],
+           [20]]])
 
    In [26]: b[..., 0:1]
-   Out[26]: 
+   Out[26]:
    array([[[ 0],
-           [ 3],
-           [ 6]],
-
-          [[ 9],
-           [12],
-           [15]],
-
-          [[18],
-           [21],
-           [24]]])
+           [ 4],
+           [ 8]],
+   
+          [[12],
+           [16],
+           [20]]])
 
 Man sieht hier deutlich, wie je nach Wahl der Achse ein entsprechender Schnitt
 durch das als Würfel vorstellbare Array gemacht wird. Das letzte Beispiel zeigt
