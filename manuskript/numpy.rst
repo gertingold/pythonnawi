@@ -1148,74 +1148,49 @@ die Achse weder die Länge Eins noch die Länge der Achse 1 des ursprünglichen
 Arrays besitzt. Anders ist dies bei einem Array der Form ``(3, 1)``, bei dem nur
 die Länge der Achse 1 auf 4 erhöht werden muss.
 
-Betrachten wir das *broadcasting* auch noch an einigen Codebeispielen.
+Betrachten wir abschließend noch entsprechende Codebeispiele.
 
 .. sourcecode:: ipython
 
-   In [41]: a = np.arange(20).reshape(4, 5)
-
+   In [41]: a = np.arange(12.).reshape(3, 4)
+   
    In [42]: a
    Out[42]: 
-   array([[ 0,  1,  2,  3,  4],
-          [ 5,  6,  7,  8,  9],
-          [10, 11, 12, 13, 14],
-          [15, 16, 17, 18, 19]])
+   array([[  0.,   1.,   2.,   3.],
+          [  4.,   5.,   6.,   7.],
+          [  8.,   9.,  10.,  11.]])
 
-   In [43]: a*np.arange(5)
+   In [43]: a+1.
    Out[43]: 
-   array([[ 0,  1,  4,  9, 16],
-          [ 0,  6, 14, 24, 36],
-          [ 0, 11, 24, 39, 56],
-          [ 0, 16, 34, 54, 76]])
+   array([[  1.,   2.,   3.,   4.],
+          [  5.,   6.,   7.,   8.],
+          [  9.,  10.,  11.,  12.]])
 
-   In [44]: a*np.arange(4)
+   In [44]: a+np.ones(4)
+   Out[44]: 
+   array([[  1.,   2.,   3.,   4.],
+          [  5.,   6.,   7.,   8.],
+          [  9.,  10.,  11.,  12.]])   
+
+   In [45]: a+np.ones(3)
    ---------------------------------------------------------------------------
    ValueError                                Traceback (most recent call last)
+   <ipython-input-7-1b5c4daa3b16> in <module>()
+   ----> 1 a+np.ones(3)
+   
+   ValueError: operands could not be broadcast together with shapes (3,4) (3,)
 
-   <ipython console> in <module>()
+   In [46]: a+np.ones(3)[:, np.newaxis]
+   Out[46]:
+   array([[  1.,   2.,   3.,   4.],
+          [  5.,   6.,   7.,   8.],
+          [  9.,  10.,  11.,  12.]])
 
-   ValueError: operands could not be broadcast together with shapes (4,5) (4,)
-
-Das Array ``a`` hat die Form ``(4, 5)`` und kann daher mit einem Array der Form
-``(5,)`` multipliziert werden. Von hinten gerechnet stimmen die Achsenlängen überein,
-so dass vorne eine Achse der Länge 4 angefügt werden kann. Ein entsprechend erweitertes
-Array hätte folgendes Aussehen:
-
-.. sourcecode:: ipython
-
-   In [45]: np.ones(shape=(4, 5), dtype=int)*np.arange(5)
-   Out[45]: 
-   array([[0, 1, 2, 3, 4],
-          [0, 1, 2, 3, 4],
-          [0, 1, 2, 3, 4],
-          [0, 1, 2, 3, 4]])
-
-Damit ist ein elementweises Multiplizieren möglich. Im zweiten Beispiel oben haben wir
-es neben unserem Array ``a`` der Form ``(4, 5)`` mit einem Array der Form ``(4,)`` zu tun.
-In diesem Fall ist kein *broadcasting* möglich, und es kommt zu einer ``ValueError``-Ausnahme.
-Anders stellt sich die Situation dar, wenn die Achsenlänge 4 zur Achse 0 gehört und die Achse 1
-die Länge 1 besitzt. Dies können wir mit Hilfe von ``newaxis`` erreichen:
-
-.. sourcecode:: ipython
-
-   In [46]: b = np.arange(4)[:, np.newaxis]
-
-   In [47]: b
+   In [47]: a+np.ones(3).reshape(3, 1)
    Out[47]: 
-   array([[0],
-          [1],
-          [2],
-          [3]])
-
-   In [48]: b.shape
-   Out[48]: (4, 1)
-
-   In [49]: a*b
-   Out[49]: 
-   array([[ 0,  0,  0,  0,  0],
-          [ 5,  6,  7,  8,  9],
-          [20, 22, 24, 26, 28],
-          [45, 48, 51, 54, 57]])
+   array([[  1.,   2.,   3.,   4.],
+          [  5.,   6.,   7.,   8.],
+          [  9.,  10.,  11.,  12.]])
 
 .. _ufuncs:
 
