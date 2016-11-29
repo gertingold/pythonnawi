@@ -1199,7 +1199,7 @@ Universelle Funktionen
 ----------------------
 
 Im Abschnitt :ref:`arrayerzeugung` hatten wir in einem Beispiel bereits eine
-Funktion auf ein Array angewandt. Um dieses Vorgehen besser zu verstehen
+Funktion auf ein Array angewandt. Um dieses Vorgehen besser zu verstehen,
 importieren wir zusätzlich zum ``numpy``-Paket, das in diesem Kapitel immer
 importiert sein sollte, noch das ``math``-Modul und versuchen dann, den Sinus
 eines Arrays auszuwerten.
