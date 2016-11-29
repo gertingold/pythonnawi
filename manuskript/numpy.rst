@@ -1036,7 +1036,7 @@ werden.
    a = np.random.random(12)
    print a
    print "-"*30
-   indexarray = a<threshold
+   indexarray = a < threshold
    print indexarray
    print "-"*30
    a[indexarray] = threshold
@@ -1059,14 +1059,62 @@ besitzt. In Zeile 8 werden die auf diese Weise indizierten Elemente dann auf
 den Schwellwert gesetzt.  Es sei noch angemerkt, dass sich diese Funktionalität
 auch direkt mit der ``clip``-Funktion erreichen lässt.
 
-Im vorigen Beispiel haben wir in der Vergleichsoperation in Zeile 5 ein
-Array und ein Skalar miteinander verglichen. Wie kann dies funktionieren? Den
-Vergleich zweier Arrays derselben Form kann man sinnvoll elementweise definieren.
-Soll ein Array mit einem Skalar verglichen werden, so wird der Skalar von NumPy
-zunächst mit gleichen Elementen so erweitert, das ein Array mit der benötigten
-Form entsteht. Dieser als *broadcasting* bezeichnete Prozess kommt beispielsweise
-auch bei arithmetischen Operationen zum Einsatz. Die beiden folgenden Anweisungen
-sind daher äquivalent:
+Als Anwendungsbeispiel für die Indizierung von Arrays durch *slicing* und durch
+*fancy indexing* betrachten wir das Sieb des Eratosthenes zur Bestimmung von
+Primzahlen. Die folgende Abbildung illustriert das Prinzip.
+
+.. image:: images/numpy/eratosthenes.*
+           :height: 6cm
+           :align: center
+
+Ausgehend von der Zwei als kleinster Primzahl werden in aufsteigender
+Reihenfolge für alle Primzahlen deren Vielfache als Nichtprimzahlen
+identifiziert. Dies ist in der Abbildung durch Kreuze in der entsprechenden
+Farbe angedeutet. Beim Durchstreichen genügt es, mit dem Quadrat der jeweiligen
+Primzahl zu beginnen, da kleinere Vielfache bereits bei der Betrachtung einer
+kleineren Primzahl berücksichtigt wurden. So werden nacheinander alle Zahlen
+in der Liste identifiziert, die keine Primzahlen sind. Übrig bleiben somit die
+gesuchten Primzahlen. Eine Realisierung dieses Verfahrens unter Verwendung der
+Möglichkeiten von NumPy könnte folgendermaßen aussehen.
+
+.. sourcecode:: python
+   :linenos:
+
+   nmax = 50
+   integers = np.arange(nmax)
+   is_prime = np.ones(nmax, dtype=bool)
+   is_prime[:2] = False
+   for j in range(2, int(np.sqrt(nmax))+1):
+       if is_prime[j]:
+           is_prime[j*j::j] = False
+   print(integers[is_prime])
+
+Als Ergebnis wird am Ende die Liste
+
+.. sourcecode:: python
+
+   [ 2  3  5  7 11 13 17 19 23 29 31 37 41 43 47]
+
+ausgegeben. Um die Indizierung leicht nachvollziehbar zu machen, enthält das
+Array ``integers`` der zu untersuchenden Zahlen auch die Null und die Eins.
+Nachdem in Zeile 3 zunächst alle Zahlen als potentielle Primzahlen markiert
+werden, wird dies in Zeile 4 für die Null und die Eins gleich wieder rückgängig
+gemacht. Da das Wegstreichen von Zahlen erst mit dem Quadrat einer Primzahl
+beginnt, müssen nur Primzahlen bis zur Wurzel aus der maximalen Zahl ``nmax``
+betrachtet werden. In der Schleife der Zeilen 6 und 7 werden für jede dieser
+Primzahlen beginnend bei deren Quadrat die Vielfachen der Primzahl bis zum Ende
+der Liste zu Nichtprimzahlen erklärt. Die Ausgabe in Zeile 8 benutzt dann *fancy
+indexing* mit Hilfe des booleschen Arrays ``is_prime``, um die tatsächlichen
+Primzahlen aus der Liste der potentiellen Primzahlen ``integers`` auszuwählen.
+
+In einem Beispiel zum *fancy indexing* haben wir in der Vergleichsoperation ``a
+< threshold`` ein Array (``a``) und ein Skalar (``threshold``) miteinander
+verglichen. Wie kann dies funktionieren? Den Vergleich zweier Arrays derselben
+Form kann man sinnvoll elementweise definieren.  Soll ein Array mit einem Skalar
+verglichen werden, so wird der Skalar von NumPy zunächst mit gleichen Elementen
+so erweitert, das ein Array mit der benötigten Form entsteht. Dieser als
+*broadcasting* bezeichnete Prozess kommt beispielsweise auch bei arithmetischen
+Operationen zum Einsatz. Die beiden folgenden Anweisungen sind daher äquivalent:
 
 .. sourcecode:: ipython
 
