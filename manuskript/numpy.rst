@@ -1223,11 +1223,11 @@ die Länge 1 besitzt. Dies können wir mit Hilfe von ``newaxis`` erreichen:
 Universelle Funktionen
 ----------------------
 
-Im vorigen Unterkapitel haben wir bereits begonnen, mathematische Operationen
-mit Arrays zu betrachten. Was passiert, wenn wir versuchen, Funktionen von
-Arrays auszuwerten? Für die folgenden Betrachtungen importieren wir zusätzlich
-zum ``numpy``-Paket, das in diesem Kapitel immer importiert sein sollte, noch
-das ``math``-Modul und versuchen dann, den Sinus eines Arrays auszuwerten.
+Im Abschnitt :ref:`arrayerzeugung` hatten wir in einem Beispiel bereits eine
+Funktion auf ein Array angewandt. Um dieses Vorgehen besser zu verstehen
+importieren wir zusätzlich zum ``numpy``-Paket, das in diesem Kapitel immer
+importiert sein sollte, noch das ``math``-Modul und versuchen dann, den Sinus
+eines Arrays auszuwerten.
 
 .. sourcecode:: ipython
 
