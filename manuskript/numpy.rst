@@ -1131,8 +1131,24 @@ beiden beteiligten Arrays von der letzten Achse beginnend die Länge der Achsen
 jeweils gleich ist oder eine Achse die Länge Eins besitzt. Eine Achse der Länge
 Eins wird durch Wiederholen der Elemente im erforderlichen Umfang verlängert.
 Entsprechendes geschieht beim Hinzufügen von Achsen von vorne, um die
-Dimensionen der Arrays identisch zu machen. Wir illustrieren dies an einem
-Beispiel.
+Dimensionen der Arrays identisch zu machen. Die folgende Abbildung illustriert
+das *broadcasting*.
+
+.. image:: images/numpy/broadcast.*
+           :height: 6cm
+           :align: center
+
+Hier ist ein Array der Form ``(3, 4)`` vorgegeben. Für ein Array der Form
+``(1,)`` wird die Länge auf die Länge der Achse 1 des ersten Array, also 4,
+erweitert. Zudem wird eine weitere Achse 0 mit der gleichen Länge wie im
+ursprünglichen Array hinzugefügt. Geht man von einem Array der Form ``(4,)``
+aus, so muss nur noch in gleicher Weise die Achse 0 hinzugefügt werden.  Dagegen
+genügt ein Array der Form ``(3,)`` nicht den Bedingungen des *broadcasting*, da
+die Achse weder die Länge Eins noch die Länge der Achse 1 des ursprünglichen
+Arrays besitzt. Anders ist dies bei einem Array der Form ``(3, 1)``, bei dem nur
+die Länge der Achse 1 auf 4 erhöht werden muss.
+
+Betrachten wir das *broadcasting* auch noch an einigen Codebeispielen.
 
 .. sourcecode:: ipython
 
