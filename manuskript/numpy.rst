@@ -1459,35 +1459,45 @@ Möchte man dagegen eine Matrixmultiplikation ausführen, so verwendet man das `
    array([[-3, -3],
           [ 4,  7]])
 
+Ab Python 3.5 und NumPy 1.10 steht hierfür auch ein spezieller Operator zur
+Verfügung.
+
+.. code-block:: ipython
+
+   In [9]: a1 @ a2
+   Out[9]: 
+   array([[-3, -3],
+          [ 4,  7]])
+
 Man könnte die Norm eines Vektors ebenfalls mit Hilfe des ``dot``-Produkts bestimmen. Es bietet
 sich jedoch an, hierzu direkt die ``norm``-Funktion zu verwenden:
 
 .. code-block:: ipython
 
-   In [9]: vec = np.array([1, -2, 3])
+   In [10]: vec = np.array([1, -2, 3])
 
-   In [10]: LA.norm(vec)
-   Out[10]: 3.7416573867739413
+   In [11]: LA.norm(vec)
+   Out[11]: 3.7416573867739413
 
-   In [11]: LA.norm(vec)**2
-   Out[11]: 14.0
+   In [12]: LA.norm(vec)**2
+   Out[12]: 14.0
 
 Als nächstes wollen wir ein inhomogenes lineares Gleichungssystem ``ax = b`` lösen, wobei die
 Matrix ``a`` und der Vektor ``b`` gegeben sind und der Vektor ``x`` gesucht ist.
 
 .. code-block:: ipython
 
-   In [12]: a = np.array([[2, -1], [-3, 2]])
+   In [13]: a = np.array([[2, -1], [-3, 2]])
 
-   In [13]: b = np.array([1, 2])
+   In [14]: b = np.array([1, 2])
 
-   In [14]: LA.det(a)
-   Out[14]: 0.99999999999999978
+   In [15]: LA.det(a)
+   Out[15]: 0.99999999999999978
 
-   In [15]: np.dot(LA.inv(a), b)
-   Out[15]: array([ 4.,  7.])
+   In [16]: np.dot(LA.inv(a), b)
+   Out[16]: array([ 4.,  7.])
 
-In Eingabe 14 haben wir zunächst überprüft, dass die Determinante der Matrix
+In Eingabe 15 haben wir zunächst überprüft, dass die Determinante der Matrix
 ``a`` ungleich Null ist, so dass die invertierte Matrix existiert. Anschließend
 haben wir den Vektor ``b`` von links mit der Inversen von ``a`` multipliziert,
 um den Lösungsvektor zu erhalten. Allerdings erfolgt die numerische Lösung
@@ -1497,8 +1507,8 @@ NumPy stell hierzu die ``solve``-Funktion zur Verfügung:
 
 .. code-block:: ipython
 
-   In [16]: LA.solve(a, b)
-   Out[16]: array([ 4.,  7.])
+   In [17]: LA.solve(a, b)
+   Out[17]: array([ 4.,  7.])
 
 Eine nicht invertierbare Matrix führt hier wie auch bei der Bestimmung der Determinante
 auf eine ``LinAlgError``-Ausnahme mit dem Hinweis auf eine singuläre Matrix.
@@ -1509,27 +1519,28 @@ die zugehörigen Eigenwerte für beliebige quadratische Matrizen:
 
 .. code-block:: ipython
 
-   In [17]: a = np.array([[1, 3], [4, -1]])
+   In [18]: a = np.array([[1, 3], [4, -1]])
 
-   In [18]: evals, evecs = LA.eig(a)
+   In [19]: evals, evecs = LA.eig(a)
 
-   In [19]: evals
-   Out[19]: array([ 3.60555128, -3.60555128])
+   In [20]: evals
+   Out[20]: array([ 3.60555128, -3.60555128])
 
-   In [20]: evecs
-   Out[20]: 
+   In [21]: evecs
+   Out[21]: 
    array([[ 0.75499722, -0.54580557],
           [ 0.65572799,  0.83791185]])
 
-   In [21]: for n in range(evecs.shape[0]):
+   In [22]: for n in range(evecs.shape[0]):
        print(np.dot(a, evecs[:, n]), evals[n]*evecs[:, n])
-   Out[21]: 
+   Out[22]: 
    [ 2.72218119  2.36426089] [ 2.72218119  2.36426089]
    [ 1.96792999 -3.02113415] [ 1.96792999 -3.02113415]
 
-Die Ausgabe am Ende zeigt, dass die Eigenvektoren und -werte in der Tat korrekt sind.
-Benötigt man nur die Eigenwerte einer Matrix, so kann man durch Benutzung der
-``eigvals``-Funktion Rechenzeit sparen.
+Die Ausgabe am Ende zeigt, dass die Eigenvektoren und -werte in der Tat korrekt
+sind.  Zudem wird hier deutlich, dass die Eigenvektoren als Spaltenvektoren in
+der Matrix ``evecs`` gespeichert sind. Benötigt man nur die Eigenwerte einer
+Matrix, so kann man durch Benutzung der ``eigvals``-Funktion Rechenzeit sparen.
 
 Für die Lösung eines Eigenwertproblems von symmetrischen oder hermiteschen [#hermitesch]_
 Matrizen gibt es die Funktionen ``eigh`` und ``eigvalsh``, bei denen es genügt,
@@ -1539,20 +1550,20 @@ bieten können:
 
 .. code-block:: ipython
 
-   In [22]: a = np.random.random(250000).reshape(500, 500)
+   In [23]: a = np.random.random(250000).reshape(500, 500)
 
-   In [23]: a = a+a.T
+   In [24]: a = a+a.T
 
-   In [24]: %timeit LA.eig(a)
-   1 loops, best of 3: 736 ms per loop
+   In [25]: %timeit LA.eig(a)
+   1 loop, best of 3: 209 ms per loop
 
-   In [25]: %timeit LA.eigh(a)
-   10 loops, best of 3: 208 ms per loop
+   In [26]: %timeit LA.eigh(a)
+   10 loops, best of 3: 28.2 ms per loop
 
-Hier wird in Eingabe 23 durch Addition der Transponierten eine symmetrische
+Hier wird in Eingabe 24 durch Addition der Transponierten eine symmetrische
 Matrix erzeugt, so dass die beiden Funktionen ``eig`` und ``eigh`` mit der
-gleichen Matrix arbeiten. Die Funktion ``eigh`` ist in diesem Beispiel immerhin
-um mehr als einen Faktor 3 schneller.
+gleichen Matrix arbeiten. Die Funktion ``eigh`` ist in diesem Beispiel etwa
+siebenmal so schnell.
 
 .. |frage| image:: images/symbols/question.*
            :height: 1em
