@@ -1221,8 +1221,10 @@ umgehen kann. Hätte unser Array nur ein Element enthalten, so wären wir noch e
 gewesen. Im Beispiel hatten wir jedoch mehr als ein Element, genauer gesagt elf Elemente,
 und somit kommt es zu einer ``TypeError``-Ausnahme.
 
-Den Ausweg bietet in diesem Fall das ``numpy``-Paket selbst, das eine eigene Sinusfunktion
-zur Verfügung stellt, die in der Lage ist, auch mit Arrays umzugehen.
+Den Ausweg bietet in diesem Fall das ``numpy``-Paket selbst, das neben einer ganzen
+Reihe weiterer Funktionen auch eine eigene Sinusfunktion zur Verfügung stellt. Diese ist
+in der Lage, mit Arrays beliebiger Dimension umzugehen. Dabei wird die Funktion
+elementweise angewandt und wieder ein Array der ursprünglichen Form erzeugt.
 
 .. sourcecode:: ipython
 
@@ -1264,9 +1266,9 @@ möglichen Beispielen wählen wir die Gammafunktion:
 
 Gelegentlich benötigt man eine Funktion von zwei Variablen auf einem Gitter.
 Man könnte hierzu die ``meshgrid``-Funktion heranziehen, die wir im Abschnitt
-:ref:`arrayerzeugung` erwähnt hatten.  Da man dort die einzelnen Gitterpunkte
-explizit angegeben muss, ist es häufig bequemer, eine ``mgrid``-Gitter zu
-verwenden.
+:ref:`arrayerzeugung` erwähnt hatten. Dabei muss allerdings entweder die 
+Gitterpunkte explizit angeben oder beispielsweise mit ``linspace`` erzeugen.
+Dann ist es häufig einfacher, ein ``mgrid``-Gitter zu verwenden.
 
 .. sourcecode:: ipython
 
@@ -1300,13 +1302,28 @@ verwenden.
 
 Man beachte, dass im zweiten Fall das dritte Element in der *slice*-Syntax imaginär ist. Damit wird
 angedeutet, dass nicht die Schrittweite gemeint ist, sondern die Anzahl der Werte im durch die
-ersten beiden Zahlen spezifizierten Intervall. Unter Verwendung des *Broadcasting* genügt auch
-ein ``ogrid``-Gitter.
+ersten beiden Zahlen spezifizierten Intervall. Das folgende Beispiel zeigt eine
+weitere Anwendung. Man sieht hier, dass die Schrittweite in ``mgrid`` auch durch
+eine Gleitkommazahl gegeben sein kann.
 
 .. sourcecode:: ipython
 
-   In [9]: np.ogrid[0:3:7j, 0:3:7j]
-   Out[9]: 
+   In [9]: x, y = np.mgrid[-10:10:0.1, -10:10:0.1]
+
+   In [10]: plt.imshow(np.sin(x*y))
+
+.. image:: images/numpy/mpl_4.*
+           :height: 4.5cm
+           :align: center
+
+
+Unter Verwendung des *broadcasting* genügt auch ein mit ``ogrid`` erzeugtes Gitter,
+das wesentlich weniger Speicherplatz erfordert.
+
+.. sourcecode:: ipython
+
+   In [11]: np.ogrid[0:3:7j, 0:3:7j]
+   Out[11]: 
    [array([[ 0. ],
           [ 0.5],
           [ 1. ],
@@ -1316,81 +1333,80 @@ ein ``ogrid``-Gitter.
           [ 3. ]]),
     array([[ 0. ,  0.5,  1. ,  1.5,  2. ,  2.5,  3. ]])]
 
-Eine Anwendung bei der Berechnung von Kugelflächenfunktionen könnte folgendermaßen aussehen [#sph_harm]_.
-
-.. sourcecode:: python
-
-   import numpy as np
-   import scipy.special
-
-   thetas, phis = np.ogrid[0:np.pi:5j, 0:2*np.pi:9j]
-   n, m = 5, 2
-   resultat = scipy.special.sph_harm(m, n, phis, thetas)
-
-   print resultat
-
-Wir verzichten darauf, das Ergebnis anzugeben, da es keine weiteren Einsichten
-bringt, außer dass tatsächlich ein 5×9-Array erzeugt wird. Abschließend sei
-noch angemerkt, dass der Aufruf von ``sph_harm`` nicht funktioniert, wenn man
-``phis`` und ``thetas`` folgendermaßen definiert:
-
-.. sourcecode:: python
-
-   thetas = np.linspace(0, np.pi, 5)
-   phis = np.linspace(0, 2*np.pi, 9)
-
-Diese Definition würde kein *Broadcasting* erlauben. Hätten beide Arrays die
-gleiche Länge, würde die Kugelflächenfunktion zwar ausgewertet werden, aber man
-würde kein zweidimensionales Array sondern nur ein eindimensionales Array
-erhalten.
-
-Es ist nicht nur praktisch, Funktionen von Arrays direkt berechnen zu können,
-sondern es spart häufig auch Rechenzeit. Wir wollen dies an einem Beispiel
-illustrieren.
+Alternativ kann man die Werte für ``x`` und ``y`` auch expliziter wie folgt
+erzeugen.
 
 .. sourcecode:: ipython
 
-   In [10]: nmax = 100000
-   
-   In [11]: %%timeit
-      ...: for n in range(nmax):
-      ...:     x = 2*math.pi*n/(nmax-1)
-      ...:     y = math.sin(x)
-      ...: 
-   10 loops, best of 3: 33.2 ms per loop
-   
-   In [12]: %%timeit
-      ...: x = np.linspace(0, 2*np.pi, nmax)
-      ...: y = np.sin(x)
-      ...: 
-   100 loops, best of 3: 2.96 ms per loop
-   
-   In [13]: %%timeit
-      ...: prefactor = 2*math.pi/(nmax-1)
-      ...: for n in range(nmax):
-      ...:     y = math.sin(prefactor*n)
-      ...: 
-   100 loops, best of 3: 16.5 ms per loop
-   
-Die angegebenen Rechenzeiten sind natürlich von der Hardware abhängig, auf der
-der Code ausgeführt wurde. Daher kommt es statt auf die Absolutwerte auf
-Verhältnisse von Rechenzeiten zueinander an. Dabei zeigt sich, dass die im
-ersten Codestück programmierte explizite ``for``-Schleife etwa elfmal
-langsamer ist als das zweite Codestück, das eine universelle Funktion
-verwendet. Ein Anteil dieses Geschwindigkeitsvorteils ergibt sich daraus, dass
-in der ``for``-Schleife unnötige Rechenarbeit geleistet wird. Zieht man die
-Berechnung des konstanten Faktors ``prefactor`` aus der Schleife heraus, so
-wird die Rechenzeit immerhin etwas mehr als halbiert. Dennoch ist die
-Verwendung der universellen Funktion deutlich schneller. Der
-Geschwindigkeitsvorteil ergibt sich allerdings erst bei hinreichend großen
-Arrays. Bei kleinen Arrays kann dagegen der mit der Verwaltung der Arrays
-verbundene Aufwand überwiegen.
+   In [12]: x = np.linspace(-40, 40, 200)
 
-Abschließend sei noch angemerkt, dass es sich wegen der genannten Rechenzeitvorteile
-lohnt, einen Blick in die Liste der von NumPy zur Verfügung gestellten 
-`mathematischen Funktionen <http://docs.scipy.org/doc/numpy/reference/routines.math.html>`_
-zu werfen. Möchte man zum Beispiel die Summe der Elemente eines Arrays berechnen, so verwendet
-man sinnvollerweise die ``sum``-Funktion von NumPy.
+   In [13]: y = x[:, np.newaxis]
+
+   In [14]: z = np.sin(np.hypot(x-10, y))+np.sin(np.hypot(x+10, y))
+
+   In [15]: plt.imshow(z, cmap='viridis')
+
+.. image:: images/numpy/mpl_5.*
+           :height: 4.5cm
+           :align: center
+
+In Eingabe 13 ist es wichtig, dass eine weitere Achse hinzugefügt wird. Erst
+dann spannen ``x`` und ``y`` durch *broadcasting* ein zweidimensionales Gitter
+auf. In Eingabe 14 berechnet ``hypot`` die Länge der Hypotenuse eines
+rechtwinkligen Dreiecks mit den durch die Argumente gegebenen Kathetenlängen.
+
+Es ist nicht nur praktisch, Funktionen von Arrays direkt berechnen zu können,
+sondern es spart häufig auch Rechenzeit. Wir wollen dies an einem Beispiel
+illustrieren, in dem wir den Sinus entweder einzeln in einer Schleife oder
+mit Hilfe einer universellen Funktion berechnen.
+
+.. sourcecode:: python
+   :linenos:
+
+   import math
+   import matplotlib.pyplot as plt
+   import numpy as np
+   import time
+   
+   def sin_math(nmax):
+       xvals = np.linspace(0, 2*np.pi, nmax)
+       start = time.time()
+       for x in xvals:
+           y = math.sin(x)
+       return time.time()-start
+   
+   def sin_numpy(nmax):
+       xvals = np.linspace(0, 2*np.pi, nmax)
+       start = time.time()
+       yvals = np.sin(xvals)
+       return time.time()-start
+   
+   maxpower = 27
+   nvals = np.empty(maxpower)
+   tvals = np.empty_like(nvals)
+   for nr, nmax in enumerate(np.logspace(1, maxpower, maxpower, base=2)):
+       nvals[nr] = nmax
+       tvals[nr] = sin_math(nmax)/sin_numpy(nmax)
+   plt.rc('text', usetex=True)
+   plt.xscale('log')
+   plt.xlabel('$n_\mathrm{max}$', fontsize=20)
+   plt.ylabel('$t_\mathrm{math}/t_\mathrm{numpy}$', fontsize=20)
+   plt.plot(nvals, tvals, 'o')
+   plt.show()
+
+.. image:: images/numpy/mpl_6.*
+           :height: 6cm
+           :align: center
+
+Ist die jeweilige Funktion häufig zu berechnen, so kann man etwa eine
+Größenordnung an Rechenzeit einsparen. Der Vorteil der universellen Funktion
+wird noch etwas größer, wenn man verlangt, dass das Ergebnis in einem Array
+oder in einer Liste abgespeichert wird. In der Funktion ``sin_numpy`` ist das
+bereits der Fall, nicht jedoch in der Funktion ``sin_math``.
+
+Wegen der genannten Rechenzeitvorteile lohnt es sich, einen Blick in die Liste
+der von NumPy zur Verfügung gestellten `mathematischen Funktionen
+<http://docs.scipy.org/doc/numpy/reference/routines.math.html>`_ zu werfen.
 
 ---------------
 Lineare Algebra
