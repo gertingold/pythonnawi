@@ -1565,6 +1565,110 @@ Matrix erzeugt, so dass die beiden Funktionen ``eig`` und ``eigh`` mit der
 gleichen Matrix arbeiten. Die Funktion ``eigh`` ist in diesem Beispiel etwa
 siebenmal so schnell.
 
+--------------------
+Einfache Anwendungen
+--------------------
+
+In diesem Abschnitt stellen wir einige einfache Problemstellungen vor, die sich
+mit Hilfe von NumPy gut bearbeiten lassen. Wir verzichten dabei bewusst auf die
+Angabe der Lösung, zeigen jedoch die zu erwartenden Resultate.
+
+................
+Mandelbrot-Menge
+................
+
+Betrachtet man die Rekursionsformel :math:`z_{n+1} = z_n^2+c` mit :math:`z_0=0`,
+so ist die Mandelbrot-Menge durch die komplexen Zahlen :math:`c` definiert, für
+die Folge der :math:`z_n` beschränkt bleibt. Überschreitet der Betrag von
+:math:`z` die Schwelle 2, so divergiert die Folge. In der Praxis wird man
+natürlich nur eine endliche Zahl von Iterationen ausführen können.
+
+In der linken der beiden folgenden Abbildung ist die Mandelbrot-Menge in weiß
+dargestellt.  Bei der Berechnung wird man möglicherweise Überlaufwarnungen
+erhalten. Diese kann man vermeiden, wenn man die Berechnung nur für die Werte
+von :math:`c` fortsetzt, für die die Schwelle von Zwei noch nicht überschritten
+wurde. Dann eröffnet sich auch die Möglichkeit, die Zahl der Iterationen bis zum
+Erreichen der Schwelle abzuspeichern und in einer Farbabbildung darzustellen.
+Dies ist im rechten Bild für einen Ausschnitt gezeigt.
+
+.. image:: images/numpy/mandelbrot.*
+           :height: 6cm
+           :align: center
+
+..................
+Brownsche Bewegung
+..................
+
+Eine Zufallsbewegung in einer Dimension kann man durch Zufallszahlen darstellen,
+die aus der Menge der beiden Zahlen :math:`-1` und :math:`1` gezogen werden.
+Jede Zufallszahl gibt die Richtung an, in der zu dem entsprechenden Zeitpunkt
+ein Schritt ausgeführt wird. Es sollen nun mehrere Realisierung erzeugt und
+graphisch dargestellt werden. Aus den erzeugten Daten soll auch der Mittelwert
+und die Varianz des Orts als Funktion der Zeit berechnet und dargestellt werden. 
+Für die Berechnung ist es praktisch, dass NumPy eine Funktion zur Verfügung
+stellt, die für ein Array sukzessive kumulative Summen berechnen kann.
+
+.. image:: images/numpy/brownianmotion.*
+           :height: 10cm
+           :align: center
+
+.....................................
+Fibonacci-Zahlen und goldener Schnitt
+.....................................
+
+Die Fibonacci-Folge ist durch die Rekursionsformel :math:`f_{n+1} = f_n+f_{n-1}`
+mit den Anfangswerten :math:`f_1=f_2=1` bestimmt. Das Verhältnis
+:math:`f_{n+1}/f_{n}` geht für große :math:`n` gegen einen Grenzwert, der mit
+Hilfe des ``linalg``-Moduls von NumPy berechnet werden soll. Dies gelingt, wenn
+man die Rekursionsformel als Abbildung des Tupels :math:`(f_n, f_{n-1})` auf
+das Tupel :math:`(f_{n+1}, f_n)` interpretiert.
+
+...............
+Bildbearbeitung
+...............
+
+NumPy-Arrays können auch Bilddaten repräsentieren, so dass sich die Bearbeitung
+eines Bildes auf die Manipulation eines NumPy-Arrays zurückführen lässt. Der
+folgende Code zeigt, wie man ein in der SciPy-Bibliothek verfügbares Bild als
+Array interpretieren und graphisch darstellen kann.
+
+.. sourcecode:: ipython
+
+   In [1]: from scipy import misc
+
+   In [2]: face = misc.face(gray=True)
+
+   In [3]: face
+   Out[3]: 
+   array([[114, 130, 145, ..., 119, 129, 137],
+          [ 83, 104, 123, ..., 118, 134, 146],
+          [ 68,  88, 109, ..., 119, 134, 145],
+          ..., 
+          [ 98, 103, 116, ..., 144, 143, 143],
+          [ 94, 104, 120, ..., 143, 142, 142],
+          [ 94, 106, 119, ..., 142, 141, 140]], dtype=uint8)
+
+Wir haben es hier mit einem Array zu tun, dessen Elemente durch vorzeichenlose
+8-Bit-Integers dargestellt sind, also Zahlen zwischen 0 und 255 repräsentieren.
+Diese können wir als Grauwerte darstellen.
+
+.. sourcecode:: ipython
+
+   In [4]: plt.imshow(face, cmap=plt.cm.gray)
+
+.. image:: images/numpy/face_orig.*
+           :height: 5cm
+           :align: center
+
+Durch geeignete Manipulation des NumPy-Arrays ``face`` lässt sich das Bild in
+ein Schwarz-Weiß-Bild verwandeln oder man kann die Kontrastkurve verändern.
+Des Weiteren kann man das Bild zum Beispiel mit verschiedenen Rahmen versehen.
+Einige Möglichkeiten zeigen die folgenden Bilder.
+
+.. image:: images/numpy/facecollection.*
+           :height: 8cm
+           :align: center
+
 .. |frage| image:: images/symbols/question.*
            :height: 1em
 .. [#array] Wir verwenden im Folgenden das englische Wort *Array*, um damit den ``ndarray``-Datentyp
@@ -1572,7 +1676,5 @@ siebenmal so schnell.
             dass sich Arrays nicht notwendigerweise wie Matrizen verhalten. So entspricht das Produkt
             von zwei Arrays im Allgemeinen nicht dem Matrixprodukt.
 .. [#strides] Das englische Wort *stride* bedeutet Schritt.
-.. [#sph_harm] Im ``scipy``-Modul sind die Winkel im Vergleich zur üblichen Konvention gerade vertauscht
-            benannt (siehe auch die `Dokumentation zur Funktion sph_harm <http://docs.scipy.org/doc/scipy/reference/generated/scipy.special.sph_harm.html#scipy.special.sph_harm>`_).
 .. [#hermitesch] Eine hermitesche Matrix geht beim Transponieren in die konjugiert komplexe Matrix über:
             :math:`a_{ij}=a_{ji}^*`.
