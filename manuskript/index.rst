@@ -16,3 +16,4 @@ Vorlesungsmanuskript »Python für Naturwissenschaftler«
    git
    testing
    profiling
+   parallel
