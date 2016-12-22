@@ -55,8 +55,154 @@ verwenden, beispielsweise Subversion oder Git, das wir im Kapitel
 programmieren, die es erlauben, die neue Programmversion auf Korrektheit zu
 überprüfen. Techniken hierfür hatten wir im Kapitel :ref:`testing` besprochen.
 
-Wenden wir uns nun einigen wichtigen Möglichkeiten zu, die Laufzeit von
-Python-Skripten zu analysieren.
+Bevor wir einige Möglichkeiten besprechen, die Laufzeit von Python-Skripten zu
+bestimmen, wollen wir im nächsten Abschnitt zunächst auf einige Schwierigkeiten
+bei der Laufzeitmessung hinweisen. 
+
+-----------------------------------
+Fallstricke bei der Laufzeitmessung
+-----------------------------------
+
+Python stellt mit dem Modul ``time`` eine Möglichkeit zur Verfügung, die
+aktuelle Zeit und damit letztlich auch Zeitdifferenzen zu bestimmen.
+
+.. sourcecode:: ipython
+
+   In [1]: import time
+
+   In [2]: time.ctime()
+   Out[2]: 'Thu Dec 22 14:39:30 2016'
+
+Auch wenn die aktuelle Zeit hier in einem gut lesbaren Format ausgegeben wird,
+eignet sich dieses Ergebnis nur schlecht zur Bildung von Zeitdifferenzen. Besser
+ist es, die Zahl der Sekunden seit Beginn der „Zeitrechnung“ zu bestimmen. Dabei
+beginnt die Zeitrechnung auf Unix-Systemen am 1.1.1970 um 00:00:00 UTC.
+
+.. sourcecode:: ipython
+
+   In [3]: time.time()
+   Out[3]: 1482413973.190686
+
+Damit lässt sich nun die Zeit bestimmen, die ein bestimmter Python-Code
+benötigt, wie folgendes Beispiel zeigt.
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+
+   summe = 0
+   start = time.time()
+   for n in range(1000000):
+       summe = summe+1
+   ende = time.time()
+   print('{:5.3f}s'.format(ende-start))
+
+Hier wird die Zeitdauer gemessen, die die Schleife in den Zeilen 5 und 6 benötigt.
+Allerdings ist diese Zeit keineswegs immer genau gleich lang. Das Skript
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+
+   for _ in range(10):
+       summe = 0
+       start = time.time()
+       for n in range(1000000):
+           summe = summe+1
+       ende = time.time()
+       print('{:5.3f}s'.format(ende-start), end='  ')
+
+liefert zum Beispiel die folgende Ausgabe::
+
+   0.150s  0.108s  0.104s  0.103s  0.107s  0.106s  0.104s  0.103s  0.103s  0.103s
+
+wobei das Ergebnis beim nächsten Lauf oder erst recht auf einem anderen Computer
+deutlich anders aussehen kann. Es kann also sinnvoll sein, über mehrere Durchläufe
+zu mitteln, wie es das ``timeit``-Modul tut, das wir im nächsten Abschnitt
+besprechen werden.
+
+Bei der Ermittlung von Laufzeiten ist weiter zu bedenken, dass der Prozessor
+auch von anderen Aufgaben in Anspruch genommen wird, so dass wir gerade zwar
+die während des Laufs verstrichene Zeit bestimmt haben, nicht aber die Zeit,
+die der Prozessor hierfür tatsächlich aufgewendet hat. Dies illustrieren wir im
+folgenden Beispiel, in dem wir das Skript zeitweilig pausieren lassen. Damit
+wird in Zeile 9 simuliert, dass andere Prozesse für eine Unterbrechung der
+Ausführung unseres Skripts sorgen. Außerdem benutzen wir in den Zeilen 5 und 11
+``time.process_time()``, um die vom Prozessor aufgewandte Zeit für den Prozess
+zu bestimmen, in dem unser Skript abgearbeitet wird.
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+
+   summe = 0
+   start = time.time()
+   start_proc = time.process_time()
+   for n in range(10):
+       for m in range(100000):
+           summe = summe+1
+       time.sleep(1)
+   ende = time.time()
+   ende_proc = time.process_time()
+   print('Gesamtzeit: {:5.3f}s'.format(ende-start))
+   print('Systemzeit: {:5.3f}s'.format(ende_proc-start_proc))
+
+Die Ausgabe::
+
+   Gesamtzeit: 10.248s
+   Systemzeit: 0.238s
+
+zeigt, dass die Gesamtdauer des Skripts erwartungsgemäß um etwa 10 Sekunden
+länger ist als die in Anspruch genommene Prozessorzeit.
+
+Vorsicht ist auch geboten, wenn man den zu testenden Codeteil der Übersichtlichkeit
+halber in eine Funktion auslagert, da dann die Zeit für den Funktionsaufruf relevant
+werden kann. Dies ist besonders der Fall, wenn die eigentliche Auswertung der
+Funktion nur sehr wenig Zeit erfordert. So liefert der folgende Code
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+   
+   summe = 0
+   start_proc = time.process_time()
+   for n in range(10000000):
+       summe = summe+1
+   ende_proc = time.process_time()
+   print('Systemzeit: {:5.3f}s'.format(ende_proc-start_proc))
+   
+eine Laufzeit von 1,122 Sekunden, während der äquivalente Code
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+
+   def increment_by_one(x):
+       return x+1
+
+   summe = 0
+   start_proc = time.process_time()
+   for n in range(10000000):
+       increment_by_one(summe)
+   ende_proc = time.process_time()
+   print('Systemzeit: {:5.3f}s'.format(ende_proc-start_proc))
+
+mit 1,529 Sekunden gemessen wurde und somit um fast 40 Prozent langsamer läuft.     
+
+Unabhängig von den genannten Problemen bedeutet jede Laufzeitmessung immer einen
+Eingriff in die Ausführung des Skripts, so dass die gemessene Laufzeit unter
+Umständen deutlich gegenüber der normalen Laufzeit des entsprechenden Codes
+erhöht sein kann. 
+
+In den bisherigen Beispielen haben wir zur Laufzeitbestimmung erheblich in den
+Code eingegriffen, so dass dieses Vorgehen nicht immer geeignet ist. Wir
+besprechen daher im Folgenden ausgewählte Alternativen, die entsprechend den
+jeweiligen Erfordernissen eingesetzt werden können.
 
 .. _timeit:
 
@@ -64,11 +210,13 @@ Python-Skripten zu analysieren.
 Das Modul ``timeit``
 --------------------
 
-Um die Laufzeit von Einzeilern oder kleineren Codeteilen zu testen, kann
-man das Python-Modul ``timeit`` heranziehen. Dies ist zum Beispiel dann
-nützlich, wenn man sich ein Bild davon machen möchte, welche Codevariante
-die schnellere sein wird. Die wohl einfachste Möglichkeit, ``timeit``
-einzusetzen, besteht in der Benutzung der IPython-Shell.
+Um die Laufzeit von Einzeilern oder kleineren Codeteilen zu testen, kann man das
+Python-Modul ``timeit`` heranziehen. Dies ist zum Beispiel dann nützlich, wenn
+man sich ein Bild davon machen möchte, welche Codevariante die schnellere sein
+wird. Im Allgemeinen wird dabei über mehrere oder sogar viele Wiederholungen
+gemittelt, um zu einem möglichst zuverlässigen Ergebnis zu kommen. Die wohl
+einfachste Möglichkeit, ``timeit`` einzusetzen, besteht in der Benutzung der
+IPython-Shell.
 
 Einen Laufzeitvergleich zwischen zwei Arten eine Zahl zu quadrieren, kann
 man in IPython folgendermaßen vornehmen:
