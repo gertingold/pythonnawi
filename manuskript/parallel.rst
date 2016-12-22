@@ -14,6 +14,10 @@ Parallelverarbeitung in Python
            :width: 100%
            :align: center
 
+.. image:: images/parallel/mandelbrot_tiles.*
+           :width: 6cm
+           :align: center
+
 -----
 Numba
 -----
