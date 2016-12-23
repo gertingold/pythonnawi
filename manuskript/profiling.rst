@@ -50,12 +50,12 @@ geändert hat, so dass es viel schneller läuft, dann aber nicht mehr das tut wa
 es eigentlich tun soll. Daher sollte man mindestens eine funktionstüchtigte
 Version des Programms aufbewahren, z.B. eine Kopie, die eine Endung ``.bak``
 erhält. Wesentlich besser ist es natürlich, ein Versionskontrollsystem zu
-verwenden, beispielsweise Subversion oder Git, das wir im Kapitel
-:ref:`vcgit` beschrieben haben. Außerdem ist es sinnvoll, Tests zu
-programmieren, die es erlauben, die neue Programmversion auf Korrektheit zu
-überprüfen. Techniken hierfür hatten wir im Kapitel :ref:`testing` besprochen.
+verwenden, beispielsweise Git, das wir im Kapitel :ref:`vcgit` beschrieben
+haben. Außerdem ist es sinnvoll, Tests zu programmieren, die es erlauben, die
+neue Programmversion auf Korrektheit zu überprüfen. Techniken hierfür werden 
+im Kapitel :ref:`testing` besprochen.
 
-Bevor wir einige Möglichkeiten besprechen, die Laufzeit von Python-Skripten zu
+Bevor wir einige Möglichkeiten diskutieren, die Laufzeit von Python-Skripten zu
 bestimmen, wollen wir im nächsten Abschnitt zunächst auf einige Schwierigkeiten
 bei der Laufzeitmessung hinweisen. 
 
@@ -99,7 +99,8 @@ benötigt, wie folgendes Beispiel zeigt.
    print('{:5.3f}s'.format(ende-start))
 
 Hier wird die Zeitdauer gemessen, die die Schleife in den Zeilen 5 und 6 benötigt.
-Allerdings ist diese Zeit keineswegs immer genau gleich lang. Das Skript
+Allerdings ist diese Zeit keineswegs immer genau gleich lang. Das um eine
+Schleife erweiterte Skript
 
 .. sourcecode:: python
    :linenos:
@@ -114,7 +115,7 @@ Allerdings ist diese Zeit keineswegs immer genau gleich lang. Das Skript
        ende = time.time()
        print('{:5.3f}s'.format(ende-start), end='  ')
 
-liefert zum Beispiel die folgende Ausgabe::
+liefert zum Beispiel die folgende Ausgabe ::
 
    0.150s  0.108s  0.104s  0.103s  0.107s  0.106s  0.104s  0.103s  0.103s  0.103s
 
@@ -150,7 +151,7 @@ zu bestimmen, in dem unser Skript abgearbeitet wird.
    print('Gesamtzeit: {:5.3f}s'.format(ende-start))
    print('Systemzeit: {:5.3f}s'.format(ende_proc-start_proc))
 
-Die Ausgabe::
+Die Ausgabe ::
 
    Gesamtzeit: 10.248s
    Systemzeit: 0.238s
@@ -199,10 +200,10 @@ Eingriff in die Ausführung des Skripts, so dass die gemessene Laufzeit unter
 Umständen deutlich gegenüber der normalen Laufzeit des entsprechenden Codes
 erhöht sein kann. 
 
-In den bisherigen Beispielen haben wir zur Laufzeitbestimmung erheblich in den
-Code eingegriffen, so dass dieses Vorgehen nicht immer geeignet ist. Wir
-besprechen daher im Folgenden ausgewählte Alternativen, die entsprechend den
-jeweiligen Erfordernissen eingesetzt werden können.
+Die in den Beispielen verwendete Methode der Laufzeitbestimmung hat Nachteile.
+Unter anderem erfordert sie eine explizite Modifizierung des Codes, was häufig
+unerwünscht ist. Im Folgenden besprechen wir einige ausgewählte Alternativen,
+die entsprechend den jeweiligen Erfordernissen eingesetzt werden können.
 
 .. _timeit:
 
@@ -235,13 +236,16 @@ Das Prozentzeichen wird ``timeit`` vorangestellt, um es als so genannten
 »magischen Befehl« zu kennzeichnen, also einen Befehl der IPython-Shell und
 nicht ein Python-Kommando. Da ``timeit`` in diesem Fall nicht als
 Python-Kommando interpretiert werden kann, könnte man sogar auf das
-Prozentzeichen verzichten. Wie im obigen Beispiel zu sehen ist, wird der
-Befehl, dessen Laufzeit bestimmt werden soll, mehrfach ausgeführt, wobei die
-Zahl der Wiederholungen von der Laufzeit abhängt. Es zeigt sich, dass die
-Quadrierung durch Multiplikation mit 166 Nanosekunden schneller ausgeführt wird
-als die Quadrierung durch Potenzierung, die 252 Nanosekunden benötigt.
-Natürlich hängt die Laufzeit vom verwendeten Prozessor ab und ist auch nicht
-unbedingt auf die letzte Stelle genau reproduzierbar.
+Prozentzeichen verzichten. Es zeigt sich, dass die Quadrierung durch
+Multiplikation mit 166 Nanosekunden schneller ausgeführt wird als die
+Quadrierung durch Potenzierung, die 252 Nanosekunden benötigt.  Natürlich hängt
+die Laufzeit vom verwendeten Prozessor ab und ist auch nicht unbedingt auf die
+letzte Stelle genau reproduzierbar.
+
+Wie in der Ausgabe dieses Beispiels zu sehen ist, wird der Befehl, dessen
+Laufzeit bestimmt werden soll, mehrfach ausgeführt. Dabei wird die Zahl der
+Wiederholungen automatisch so bestimmt, dass sich eine vernünftige
+Gesamtlaufzeit ergibt.
 
 Um die Laufzeit von mehrzeiligem Code zu untersuchen, wendet man den magischen
 ``timeit``-Befehl auf eine ganze Zelle an, indem man ein zweites Prozentzeichen
@@ -321,10 +325,12 @@ aufgerufenen Funktion keinen Zugriff auf den Namensraum des umgebenden Skripts
 besitzt, würde es nicht funktionieren, das Argument einfach als ``nint`` in dem
 String unterzubringen. Tatsächlich ist nicht einmal die Funktion ``f_numpy``
 bekannt. Der ``timeit``-Funktion wird daher in Zeile 19 explizit mitgeteilt,
-das zunächst aus unserem Hauptskript, auf das mit ``__main__`` Bezug genommen
+dass zunächst aus unserem Hauptskript, auf das mit ``__main__`` Bezug genommen
 wird, ``f_numpy`` zu importieren ist. In Zeile 20 verlangen wir schließlich noch,
 dass zwanzig Funktionsläufe durchgeführt werden sollen, um eine gemittelte
-Laufzeit berechnen zu können.
+Laufzeit berechnen zu können. Eine automatische Bestimmung einer sinnvollen
+Zahl von Wiederholungen nimmt ``timeit`` hier im Gegensatz zur Verwendung in
+IPython nicht vor.
 
 Wie die folgende Abbildung zeigt, bietet NumPy für sehr kleine Argumentanzahlen
 keinen Geschwindigkeitsvorteil, ganz im Gegenteil. Dies hängt damit zusammen,
@@ -337,57 +343,6 @@ hier verwendeten Hardware immerhin einen Faktor 4 bis 5 betragen.
    :width: 7cm
    :align: center
 
-Das nächste Beispiel bietet bezüglich des ``timeit``-Moduls nichts Neues.  Es
-soll vielmehr zeigen, dass es auch jenseits von NumPy noch
-Optimierungsmöglichkeiten gibt. Dies hängt damit zusammen, dass NumPy
-beispielsweise beim Berechnen von Polynomen temporäre Arrays anlegt, was
-man bei einer genaueren Analyse des Codes vermeiden könnte. Damit wird die
-Laufzeit also unnötig lang. Sofern man es mit großen Arrays zu tun hat,
-kann das Modul ``numexpr`` Vorteile bieten. Es bekommt den auszuwertenden
-Ausdruck als String übergeben und analysiert diesen zunächst, um eine
-effizientere Auswertung zu ermöglichen.
-
-.. sourcecode:: python
-
-   import numpy as np
-   import numexpr as ne
-   import timeit
-   import matplotlib.pyplot as plt
-   
-   def f_numpy(nmax):
-       x = np.linspace(0, 1, nmax)
-       result = ((5*x-2)*x+1)*x-7
-   
-   def f_numexpr(nmax):
-       x = np.linspace(0, 1, nmax)
-       result = ne.evaluate("5*x**3-2*x**2+x-7")
-   
-   x = []
-   y = []
-   for n in np.logspace(0.31, 6, 20):
-       nint = int(n)
-       t_numpy = timeit.timeit("f_numpy({})".format(nint),
-                               "from __main__ import f_numpy",
-                               number=20)
-       t_numexpr = timeit.timeit("f_numexpr({})".format(nint),
-                               "from __main__ import f_numexpr",
-                               number=20)
-       x.append(nint)
-       y.append(t_numpy/t_numexpr)
-   plt.plot(x, y)
-   plt.xscale("log")
-   plt.show()
-
-Die folgende Abbildung zeigt, dass man auf diese Weise unter Umständen die
-Laufzeit halbieren kann. Zu beachten ist allerdings, dass das Polynom in
-``f_numpy`` bereits geschickt geschrieben wurde, um die aufwändige Berechnung
-von Potenzen zu vermeiden. Sonst könnte man auf der hier verwendeten Hardware
-sogar eine Beschleunigung von etwa einem Faktor 4 erhalten.
-
-.. image:: images/profiling/profiling_2.png
-   :width: 7cm
-   :align: center
-
 ----------------------
 Das Modul ``cProfile``
 ----------------------
@@ -396,74 +351,133 @@ Das ``timeit``-Modul, das wir gerade beschrieben haben, ist sehr gut geeignet,
 um die Laufzeit eines bestimmten Codesegments zu untersuchen. Bei der Optimierung
 eines Programms interessiert man sich jedoch vor allem dafür, welche Teile des
 Programms wieviel Zeit benötigen. Dann können die rechenintensiven Codeteile
-identifiziert und gezielt optimiert werden. Man kann hier bis auf einzelne
-Codezeilen heruntergehen, wenn man zum Beispiel ``line_profiler`` benutzt
-[#lineprofiler]_.
+identifiziert und gezielt optimiert werden.
 
 Häufig ist dies jedoch nicht nötig, und es genügt festzustellen, wieviel Zeit
 in den einzelnen Funktionen oder Methoden verbracht wurde. Dies funktioniert
-dann besonders gut, wenn man den Code gut modularisiert, was ja auch im
+dann besonders gut, wenn man den Code sinnvoll modularisiert, was ja auch im
 Hinblick auf das Testen von Vorteil ist, wie wir im Kapitel :ref:`testing`
 betont hatten. Im Folgenden werden wir beschreiben, wie man mit Hilfe des
 Moduls ``cProfile`` feststellen kann, wieviel Zeit in welchen Funktionen
 während des Programmlaufs verbracht wird.
 
-Als zu analysierendes Beispielprogramm benutzen wir im Folgenden ``pystone.py``
-[#pystone]_, ein Programm zur Geschwindigkeitsbeurteilung von Hardware. Ob und
-in welchem Umfang der eigentliche Zweck des Programms erfüllt wird, ist hier
-nicht von Interesse. Es geht vielmehr darum herauszufinden, wieviel Rechenzeit
-in den einzelnen Funktionen, die sich auch untereinander aufrufen, benötigt
-wird.  Um die Rechenzeiten etwas deutlicher zu machen, haben wir die Zahl der
-Schleifen in ``pystone.py`` um einen Faktor 10 hochgesetzt [#loops]_.
+Als Beispiel ziehen wir das folgende Skript mit Namen ``pi.py`` zur Berechnung
+der Kreiszahl π heran, wobei eine Berechnung auf 100.000 Stellen durchgeführt
+wird. Das Skript basiert auf dem 
+`Gauss-Legendre oder Brent-Salamin-Algorithmus <https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_algorithm>`_
+und nutzt aus, dass Python beliebig lange Integers zulässt.
+
+.. sourcecode:: python
+   :linenos:
+
+   from math import sqrt
+   
+   def division(numerator, denominator, stellen):
+       resultat = str(numerator//denominator)+"."
+       for n in range(stellen):
+           numerator = (numerator % denominator)*10
+           resultat = "%s%s" % (resultat, numerator//denominator)
+       return resultat
+   
+   def wurzel_startwert(quadrat):
+       """bestimme näherungsweise die Wurzel aus einem langen Integer
+   
+          Es wird die Wurzel auf der Basis der ersten 12 oder 13 Stellen
+          mit Hilfe des entsprechenden Floats gezogen.
+       """
+       str_quadrat = str(quadrat)
+       nrdigits = len(str_quadrat)
+       keepdigits = 12
+       if nrdigits % 2:
+           keepdigits = keepdigits+1
+       lead_sqrt_estimate = sqrt(float(str_quadrat[:keepdigits]))
+       return int(lead_sqrt_estimate)*10**((nrdigits-keepdigits)//2)+1
+   
+   def wurzel(quadrat):
+       x = wurzel_startwert(quadrat)
+       xold = 0
+       while x != xold:
+           xold = x
+           x = (x*x+quadrat)//(2*x)
+       return x
+   
+   def agm_iteration(a, b):
+       return (a+b)//2, wurzel(a*b)
+   
+   def ausgabe(x, zeilenlaenge=80):
+       str_x = "\u03c0="+str(x)+"\u2026"
+       while len(str_x) > 0:
+           print(str_x[:zeilenlaenge])
+           str_x = str_x[zeilenlaenge:]
+   
+   stellen = 100000
+   skalenfaktor = 10**(stellen+6)
+   a = skalenfaktor
+   b = wurzel(skalenfaktor**2//2)
+   c_sum = 0
+   faktor_two = 2
+   while a != b:
+       a, b = agm_iteration(a, b)
+       faktor_two = faktor_two*2
+       c_sum = c_sum+faktor_two*(a*a-b*b)
+   numerator = 4*a**2
+   denominator = skalenfaktor**2-c_sum
+   ergebnis = division(numerator, denominator, stellen)
+   ausgabe(ergebnis)
+
+Die gesamte Ausgabe ist zu lang, um sie hier vollständig wiederzugeben, so dass
+wir uns auf die ersten beiden Zeilen beschränken. ::
+
+   π=3.1415926535897932384626433832795028841971693993751058209749445923078164062862
+   08998628034825342117067982148086513282306647093844609550582231725359408128481117
 
 Von den verschiedenen Varianten, ``cProfile`` zu benutzen, wählen wir hier eine,
 bei der wir das zu untersuchende Programm nicht modifizieren müssen. Dazu
 rufen wir das Modul mit geeigneten Argumenten auf::
 
-   $ python -m cProfile -o pystone.prof pystone.py
+   $ python -m cProfile -o pi.prof pi.py
 
-Hierbei wird das Programm ``pystone.py`` unter der Kontrolle des
-``cProfile``-Moduls ausgeführt. Die Option ``-o`` legt fest, dass die
-Ergebnisse in der Datei ``pystone.prof`` gespeichert werden sollen. Dabei
-handelt es sich um eine Binärdatei, die mit Hilfe des ``pstats``-Moduls
-analysiert werden kann. Dazu geht man folgendermaßen vor:
+Hierbei wird das Programm ``pi.py`` unter der Kontrolle des ``cProfile``-Moduls
+ausgeführt. Die Option ``-o`` legt fest, dass die Ergebnisse in der Datei
+``pi.prof`` gespeichert werden sollen. Dabei handelt es sich um eine
+Binärdatei, die mit Hilfe des ``pstats``-Moduls analysiert werden kann. Dazu
+geht man folgendermaßen vor:
 
 .. code-block:: ipython
 
    In [1]: import pstats
 
-   In [2]: p = pstats.Stats("pystone.prof")
+   In [2]: p = pstats.Stats("pi.prof")
    
-   In [3]: p.sort_stats("time").print_stats(10)
-
-   Sun Jan 18 19:46:17 2015    pystone.prof
-
-         10500020 function calls in 23.829 seconds
-
-   Ordered by: internal time
-   List reduced from 29 to 10 due to restriction <10>
-
-   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    7.358    7.358   23.829   23.829 pystone.py:86(Proc0)
-   500000    3.602    0.000    8.764    0.000 pystone.py:144(Proc1)
-   500000    2.644    0.000    2.644    0.000 pystone.py:219(Proc8)
-   500000    1.498    0.000    2.404    0.000 pystone.py:60(copy)
-   500000    1.336    0.000    1.674    0.000 pystone.py:240(Func2)
-   500000    0.959    0.000    1.271    0.000 pystone.py:171(Proc3)
-  1500000    0.950    0.000    0.950    0.000 pystone.py:232(Func1)
-   500002    0.906    0.000    0.906    0.000 pystone.py:52(__init__)
-  1500000    0.894    0.000    0.894    0.000 pystone.py:214(Proc7)
-   500000    0.893    0.000    1.208    0.000 pystone.py:195(Proc6)
+   In [3]: p.sort_stats("time").print_stats(8)
+   Fri Dec 23 15:36:56 2016    pi.prof
+   
+            2882 function calls in 68.377 seconds
+   
+      Ordered by: internal time
+      List reduced from 76 to 8 due to restriction <8>
+   
+      ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+          18   41.008    2.278   49.819    2.768 pi.py:27(wurzel)
+           1   17.776   17.776   17.776   17.776 pi.py:4(division)
+          18    8.812    0.490    8.812    0.490 pi.py:12(wurzel_startwert)
+           1    0.424    0.424   68.377   68.377 pi.py:1(<module>)
+          17    0.320    0.019   47.346    2.785 pi.py:36(agm_iteration)
+           1    0.024    0.024    0.037    0.037 pi.py:40(ausgabe)
+        1251    0.011    0.000    0.011    0.000 {built-in method builtins.print}
+        1270    0.002    0.000    0.002    0.000 {built-in method builtins.len}
+   
+   Out[3]: <pstats.Stats at 0x7f1a26ed4ac8>
 
 Nachdem in Eingabe 1 das ``pstats``-Modul geladen wurde, wird in Eingabe 2 die
-zuvor erzeugte binäre Datei ``pystone.prof`` eingelesen. Man erhält so eine
+zuvor erzeugte binäre Datei ``pi.prof`` eingelesen. Man erhält so eine
 ``pstats.Stats``-Instanz, die nun analysiert werden kann. In den meisten Fällen
 wird man die Daten nach der benötigten Zeit sortieren und auch nur die obersten
-Daten ausgeben wollen, da die Gesamtliste unter Umständen recht lang sein kann.
-In Eingabe 3 sortieren wir mit der ``sort_stats``-Methode nach der Zeit, die in
-der jeweiligen Funktion verbracht wurde. Anschließend wird mit der
-``print_stats``-Methode dafür gesorgt, dass nur die ersten zehn Zeilen ausgegeben
-werden. 
+Datensätze ausgeben wollen, da die Gesamtliste unter Umständen recht lang sein
+kann.  In Eingabe 3 sortieren wir mit der ``sort_stats``-Methode nach der Zeit,
+die in der jeweiligen Funktion verbracht wurde. Anschließend wird mit der
+``print_stats``-Methode dafür gesorgt, dass nur die ersten acht Zeilen
+ausgegeben werden. 
 
 Das Schlüsselwort ``"time"`` in der ``sort_stats``-Methode verlangt eine
 Sortierung nach der totalen Zeit, die in der jeweiligen Funktion verbracht
@@ -481,25 +495,25 @@ von ``Proc0`` und sonst von keiner weiteren Funktion aufgerufen wird.
 
 .. code-block:: ipython
 
-   In [4]: p.sort_stats("cumtime").print_stats(10)
-   Sun Jan 18 19:46:17 2015    pystone.prof
-
-         10500020 function calls in 23.829 seconds
-
-   Ordered by: cumulative time
-   List reduced from 29 to 10 due to restriction <10>
-
-   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1    0.000    0.000   23.829   23.829 {built-in method exec}
-        1    0.000    0.000   23.829   23.829 pystone.py:40(<module>)
-        1    0.000    0.000   23.829   23.829 pystone.py:67(main)
-        1    0.000    0.000   23.829   23.829 pystone.py:74(pystones)
-        1    7.358    7.358   23.829   23.829 pystone.py:86(Proc0)
-   500000    3.602    0.000    8.764    0.000 pystone.py:144(Proc1)
-   500000    2.644    0.000    2.644    0.000 pystone.py:219(Proc8)
-   500000    1.498    0.000    2.404    0.000 pystone.py:60(copy)
-   500000    1.336    0.000    1.674    0.000 pystone.py:240(Func2)
-   500000    0.959    0.000    1.271    0.000 pystone.py:171(Proc3)
+   In [4]: p.sort_stats('cumtime').print_stats(8)
+   Fri Dec 23 15:36:56 2016    pi.prof
+   
+            2882 function calls in 68.377 seconds
+   
+      Ordered by: cumulative time
+      List reduced from 76 to 8 due to restriction <8>
+   
+      ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+           1    0.000    0.000   68.377   68.377 {built-in method builtins.exec}
+           1    0.424    0.424   68.377   68.377 pi.py:1(<module>)
+          18   41.008    2.278   49.819    2.768 pi.py:27(wurzel)
+          17    0.320    0.019   47.346    2.785 pi.py:36(agm_iteration)
+           1   17.776   17.776   17.776   17.776 pi.py:4(division)
+          18    8.812    0.490    8.812    0.490 pi.py:12(wurzel_startwert)
+           1    0.024    0.024    0.037    0.037 pi.py:40(ausgabe)
+        1251    0.011    0.000    0.011    0.000 {built-in method builtins.print}
+   
+   Out[4]: <pstats.Stats at 0x7f1a26ed4ac8>
 
 Die Ausgabe zeigt auch, dass Funktionen, in denen je Aufruf (Spalte
 ``percall``) nur sehr wenig Zeit verbracht wird, relevant sein können, wenn die
@@ -521,15 +535,13 @@ anderen Programmteile kaum eine Auswirkung auf die Gesamtrechenzeit haben
 wird. Um die Situation einschätzen zu können, sind Laufzeitanalysen, wie wir
 sie hier vorgestellt haben, praktisch unerlässlich.
 
+------------------------------------
+Zeilenorientierte Laufzeitbestimmung
+------------------------------------
+
 .. [#rootofallevil] D. E. Knuth, Computing Surveys **6**, 261 (1974). Das
            angegebene Zitat befindet sich auf Seite 268.
 .. [#pypy] Weitere Informationen zu diesem Projekt findet man unter
            `www.pypy.org <http://www.pypy.org>`_.
 .. [#numba] Weitere Informationen zu diesem Projekt findet man unter
             `numba.pydata.org <http://numba.pydata.org>`_.
-.. [#lineprofiler] Für eine genauere Beschreibung siehe
-      `line_profiler and kernprof <https://github.com/rkern/line_profiler/>`_.
-.. [#pystone] ``pystone.py`` befindet sich im Verzeichnis ``Lib/test`` des
-      Python-Quellcodes.
-.. [#loops] Hierzu wurde die Variable ``LOOPS`` zu Beginn des Skripts auf den
-      Wert ``500000`` gesetzt.
