@@ -547,9 +547,180 @@ sie hier vorgestellt haben, praktisch unerlässlich.
 Zeilenorientierte Laufzeitbestimmung
 ------------------------------------
 
+Gelegentlich kann es vorkommen, dass die im letzten Abschnitt beschriebene
+funktionsbasierte Laufzeitauswertung nicht ausreicht, um ein in Hinblick auf
+die Laufzeit kritisches Codestück zu identifizieren. In diesem Fall kann man
+zu einer zeilenorientierten Laufzeitmessung greifen. Wir beschreiben hier
+das von Robert Kern entwickelte Modul ``line_profiler`` [#kern]_.
+
+Der besseren Übersichtlichkeit wegen empfiehlt es sich, eine zeilenorientierte
+Laufzeitmessung auf eine einzelne Funktion oder nur wenige Funktionen zu
+beschränken. Dazu bestimmt man am besten mit den zuvor beschriebenen Methoden
+die zeitkritischsten Funktionen. Für Funktionen, die mit einem
+``@profile``-Dekorator versehen sind, wird eine zeilenorientierte
+Laufzeitmessung durchgeführt. Wir wollen speziell die Funktionen ``wurzel`` und
+``wurzel_startwert`` betrachten. Der entsprechende Codeteil sieht dann
+folgendermaßen aus.
+
+.. sourcecode:: python
+   :linenos:
+
+      @profile
+      def wurzel_startwert(quadrat):
+          str_quadrat = str(quadrat)
+          nrdigits = len(str_quadrat)
+          keepdigits = 12
+          if nrdigits % 2:
+              keepdigits = keepdigits+1
+          lead_sqrt_estimate = sqrt(float(str_quadrat[:keepdigits]))
+          return int(lead_sqrt_estimate)*10**((nrdigits-keepdigits)//2)+1
+      
+      @profile
+      def wurzel(quadrat):
+          x = wurzel_startwert(quadrat)
+          xold = 0
+          while x != xold:
+              xold = x
+              x = xold*xold+quadrat
+              x = x//(2*xold)
+          return x
+   
+Der restliche Code bleibt unverändert. Wesentlich sind hier die beiden
+``@profile``-Dekoratoren. Für die folgende Diskussion haben wir den
+Iterationsschritt des Newton-Verfahrens in zwei Zeilen (17 und 18) 
+aufgeteilt. Außerdem haben wir einen Docstring entfernt, der hier nicht
+wesentlich ist.
+
+Von der Befehlszeile kann man nun das Skript unter Verwendung der zeilenorientierten
+Laufzeitmessung ausführen::
+
+   kernprof -l -v pi.py
+
+``kernprof`` ist der Name eines Skripts, das die Verwendung des Moduls
+``line_profiler`` automatisiert, wenn man die Option ``-l`` angibt. Die
+Option ``-v`` gibt man an, wenn die Ausgabe direkt angezeigt werden soll.
+In jedem Fall werden die relevanten Daten ähnlich wie beim ``cProfile``-Modul
+in eine Binärdatei geschrieben. Sofern nicht mit der Option ``-o`` etwas
+anderes angegeben wird, ergibt sich der Name der Datei durch Anhängen der
+Endung ``.lprof``. In unserem Falle heißt sie also ``pi.py.lprof``. Aus
+ihr kann man mit ::
+
+   python -m line_profiler pi.py.lprof
+
+die folgende Ausgabe erzeugen::
+
+   Timer unit: 1e-06 s
+   
+   Total time: 8.71038 s
+   File: pi.py
+   Function: wurzel_startwert at line 10
+   
+   Line #      Hits         Time  Per Hit   % Time  Line Contents
+   ==============================================================
+       10                                           @profile
+       11                                           def wurzel_startwert(quadrat):
+       12        18      8621108 478950.4     99.0      str_quadrat = str(quadrat)
+       13        18           61      3.4      0.0      nrdigits = len(str_quadrat)
+       14        18           20      1.1      0.0      keepdigits = 12
+       15        18           39      2.2      0.0      if nrdigits % 2:
+       16                                                   keepdigits = keepdigits+1
+       17        18          207     11.5      0.0      lead_sqrt_estimate =
+                                                          sqrt(float(str_quadrat[:keepdigits]))
+       18        18        88949   4941.6      1.0      return int(lead_sqrt_estimate)
+                                                          *10**((nrdigits-keepdigits)//2)+1
+   
+   Total time: 49.5045 s
+   File: pi.py
+   Function: wurzel at line 20
+   
+   Line #      Hits         Time  Per Hit   % Time  Line Contents
+   ==============================================================
+       20                                           @profile
+       21                                           def wurzel(quadrat):
+       22        18      8710713 483928.5     17.6      x = wurzel_startwert(quadrat)
+       23        18           31      1.7      0.0      xold = 0
+       24       288          898      3.1      0.0      while x != xold:
+       25       270          254      0.9      0.0          xold = x
+       26       270      3026189  11208.1      6.1          x = xold*xold+quadrat
+       27       270     37766390 139875.5     76.3          x = x//(2*xold)
+       28        18           31      1.7      0.0      return x
+
+In der Ausgabe zur Funktion ``wurzel_startwert`` haben wir die Zeilen 17 und 18 wegen
+der Zeilenlänge nachträglich umgebrochen. Die Ausgabe zeigt uns in der Funktion
+``wurzel_startwert`` nun deutlich, welcher Teil der Funktion für die Ausführungsdauer
+von fast 9 Sekunden verantwortlich ist, nämlich die Umwandlung eines Integers in einen
+String. Dieser Schritt ist hier erforderlich, um die Zahl der Ziffern in dem Integer
+``quadrat`` zu bestimmen.
+
+Interessant ist auch die Funktion ``wurzel``, die für einen größten Teil der Laufzeit
+verantwortlich ist. In den Zeilen 26 und 27 sehen wir, dass der Großteil der Zeit im
+Newton-Iterationsschritt verbracht wird. Dabei spielt die Berechnung des Quadrats von
+``xold`` kaum eine Rolle. Es ist vielmehr die Division in Zeile 27, die einen sehr hohen
+Zeitaufwand erfordert. Zwar ist die Zeit für die Berechnung des Startwerts in Zeile 22
+auf einen einzelnen Aufruf bezogen größer, aber nachdem die Division 270-mal aufgerufen
+wird, ist sie für mehr als Dreiviertel der Laufzeit der Funktion ``wurzel`` verantwortlich.
+
+Bei der Programmentwicklung kann es praktisch sein, das Modul ``line_profiler`` in 
+IPython zu verwenden. Im Folgenden ist ein Beispiel gezeigt, das einen Vergleich 
+zwischen der Wurzelfunktion aus dem ``math``-Modul und der Wurzelberechnung mit Hilfe
+des Newton-Verfahrens anstellt.
+
+.. sourcecode:: ipython
+
+   In [1]: %load_ext line_profiler
+
+   In [2]: import math
+   
+   In [3]: def newton_sqrt(quadrat):
+      ...:     x = 1
+      ...:     while abs(quadrat-x*x) > 1e-13:
+      ...:         x = 0.5*(x*x+quadrat)/x
+      ...:     return x
+      ...: 
+   
+   In [4]: def comparison(x):
+      ...:     sqrt1 = math.sqrt(x)
+      ...:     sqrt2 = newton_sqrt(x)
+      ...:     print(sqrt1, sqrt2)
+      ...:     
+   
+   In [5]: %lprun -f newton_sqrt comparison(500)
+   22.360679774997898 22.360679774997898
+   Timer unit: 1e-06 s
+   
+   Total time: 7e-05 s
+   File: <ipython-input-3-e6f13bf0d844>
+   Function: newton_sqrt at line 1
+   
+   Line #      Hits         Time  Per Hit   % Time  Line Contents
+   ==============================================================
+        1                                           def newton_sqrt(quadrat):
+        2         1            4      4.0      5.7      x = 1
+        3        10           34      3.4     48.6      while abs(quadrat-x*x) > 1e-13:
+        4         9           29      3.2     41.4          x = 0.5*(x*x+quadrat)/x
+        5         1            3      3.0      4.3      return x
+
+Zunächst lädt man in Eingabe 1 ``line_profiler`` als Erweiterung. Nachdem man
+die nötigen Funktionen definiert und für dieses Beispiel auch noch das ``math``-Modul
+geladen hat, kann man in Eingabe 5 mit Hilfe von ``%lprun`` die zeilenorientierte
+Laufzeitmessung ausführen. Dazu gibt man mit der Option ``-f`` die Funktion an,
+in der die Laufzeitmessung benötigt wird. Diese Option ersetzt also den ``@profile``-Dekorator.
+Bei Bedarf kann die Option ``-f`` auch mehrfach angegeben werden. Am Ende steht der
+Aufruf der Funktion, mit der der gewünschte Code ausgeführt wird, hier also
+``comparison(500)``.
+
+Nachdem wir uns in diesem Kapitel auf die Messung von Laufzeiten konzentriert
+hatten, sei abschließend noch angemerkt, dass man auch die Entwicklung des
+Speicherbedarfs während der Ausführung eines Skripts messen kann. Dies ist
+besonders dann nützlich, wenn man mit größeren Arrays arbeitet oder an die
+Grenzen des Arbeitsspeichers stößt. Um im Skript zeilenweise die Entwicklung
+des Speicherbedarfs messen zu können, verwendet man das Modul ``memory_profiler``.
+
 .. [#rootofallevil] D. E. Knuth, Computing Surveys **6**, 261 (1974). Das
            angegebene Zitat befindet sich auf Seite 268.
 .. [#pypy] Weitere Informationen zu diesem Projekt findet man unter
            `www.pypy.org <http://www.pypy.org>`_.
 .. [#numba] Weitere Informationen zu diesem Projekt findet man unter
             `numba.pydata.org <http://numba.pydata.org>`_.
+.. [#kern] Die Quellen zu diesem Modul findet man unter
+           https://github.com/rkern/line_profiler.
