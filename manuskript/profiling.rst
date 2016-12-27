@@ -447,9 +447,9 @@ geht man folgendermaßen vor:
 
    In [1]: import pstats
 
-   In [2]: p = pstats.Stats("pi.prof")
+   In [2]: p = pstats.Stats('pi.prof')
    
-   In [3]: p.sort_stats("time").print_stats(8)
+   In [3]: p.sort_stats('time').print_stats(8)
    Fri Dec 23 15:36:56 2016    pi.prof
    
             2882 function calls in 68.377 seconds
@@ -479,19 +479,19 @@ die in der jeweiligen Funktion verbracht wurde. Anschließend wird mit der
 ``print_stats``-Methode dafür gesorgt, dass nur die ersten acht Zeilen
 ausgegeben werden. 
 
-Das Schlüsselwort ``"time"`` in der ``sort_stats``-Methode verlangt eine
-Sortierung nach der totalen Zeit, die in der jeweiligen Funktion verbracht
-wurde.  Nun ruft aber beispielsweise die Funktion ``Proc0`` eine Reihe anderer
-Funktionen auf.  Mit totaler Zeit ist dann die Zeit gemeint, die tatsächlich in
-``Proc0`` verbracht wurde. Wird zwischendurch Zeit in einer anderen Funktion
-verbracht, so wird gewissermaßen die Uhr für ``Proc0`` angehalten. 
-
-Nicht immer ist diese Art der Zeitmessung erwünscht. Daher gibt es auch die
-Möglichkeit, mit dem Schlüsselwort ``"cumtime"`` die kumulative Zeit zu betrachten.
-Dies ist die Zeit, die in einer Funktion vom Eintreten bis zum Verlassen verbracht
-wird. Die für ``Proc0`` angegebenen 23.829 Sekunden in der folgenden Übersicht
-enthalten daher auch die bei ``Proc1`` angegebenen 8.764 Sekunden, da ``Proc1``
-von ``Proc0`` und sonst von keiner weiteren Funktion aufgerufen wird.
+Das Schlüsselwort ``time`` in der ``sort_stats``-Methode verlangt eine
+Sortierung nach der Zeit, die in der jeweiligen Funktion verbracht wurde. Wird
+von einer Funktion aus eine andere Funktion aufgerufen, so wird die Uhr für die
+aufrufende Funktion angehalten. Dies ist zum Beispiel in der Funktion ``wurzel``
+der Fall, die in Zeile 25 die Funktion ``wurzel_startwert`` aufruft.  Für die
+Funktion ``wurzel`` wurde gemäß der obigen Ausgabe eine Zeit ``tottime`` von
+41,008 Sekunden gemessen. Diese enthält nicht die 8,812 Sekunden, die von
+``wurzel_startwert`` benötigt werden. Die von ``wurzel`` benötigte Gesamtzeit
+lässt sich in der Spalte ``cumtime`` (*cumulative time*, also aufsummierte Zeit)
+zu 49,819 Sekunden ablesen. Dies entspricht bis auf einen Rundungsfehler der
+Summe der Zeiten, die in ``wurzel`` und ``wurzel_startwert`` verbracht wurden.
+Ist man an den aufsummierten Zeiten interessiert, so kann man das Schlüsselwort
+``cumtime`` in der ``sort_stats``-Methode verwenden.
 
 .. code-block:: ipython
 
@@ -515,13 +515,21 @@ von ``Proc0`` und sonst von keiner weiteren Funktion aufgerufen wird.
    
    Out[4]: <pstats.Stats at 0x7f1a26ed4ac8>
 
-Die Ausgabe zeigt auch, dass Funktionen, in denen je Aufruf (Spalte
-``percall``) nur sehr wenig Zeit verbracht wird, relevant sein können, wenn die
-Zahl der Aufrufe (Spalte ``ncalls``) entsprechend groß wird. Es empfiehlt sich,
-für die Funktionen, die für die Rechenzeit besonders relevant ist, die Zahl der
-Aufrufe zu überprüfen.  Dabei stellt man gelegentlich fest, dass eine Funktion
-scheinbar unerklärlich oft aufgerufen wird, beispielsweise weil sie
-unnötigerweise in einer Schleife statt außerhalb der Schleife aufgerufen wird. 
+Die Ausgabe zeigt auch, dass es nicht immer auf die Zeit ankommt, die pro Aufruf
+einer Funktion benötigt wird. Diese Information findet sich in der Spalte
+``percall``. So benötigt ``division`` in unserem Beispiel 17,776 Sekunden je
+Aufruf, während ``wurzel`` nur 2,278 Sekunden je Aufruf benötigt. Allerdings
+wird ``division`` nur einmal aufgerufen, während ``wurzel`` achtzehnmal
+aufgerufen wird. Damit ist der Beitrag von ``wurzel`` zur Gesamtlaufzeit
+erheblich größer als der Beitrag von ``division``.
+
+Es kann sinnvoll sein, die in der Spalte ``ncalls`` angegebene Anzahl der
+Aufrufe einer Funktion auf Plausibilität zu überprüfen. Gelegentlich stellt
+sich dabei heraus, dass eine Funktion unnötigerweise mehrfach aufgerufen
+wird. So kann es vorkommen, dass eine Funktion in einer Schleife aufgerufen
+wird, obwohl sich die Funktionsargumente in der Schleife nicht ändern.
+Eine entsprechende Anpassung des Programms kann dann auf einfache
+Weise zu einer Beschleunigung führen.
 
 Mit den beschriebenen Ausgaben lässt sich nun feststellen, in welchen Teilen
 des Programms der größte Anteil der Rechenzeit verstreicht. Man kann sich somit
