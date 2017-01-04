@@ -44,13 +44,32 @@ man es sich zur Regel machen, einen Test zu schreiben, der diesen Fehler festste
 kann. Auf diese Weise kann man verhindern, dass sich dieser Fehler nochmals unbemerkt
 in das Programm einschleicht. 
 
-Man sollte nicht nur auf eine möglichst vollständige Abdeckung der Funktionalität
-durch Tests achten, sondern auch darauf, dass diese Tests möglichst unabhängig voneinander
-sind, also jeweils spezifische Aspekte des Codes überprüfen. Außerdem sollte das
-Fehlschlagen eines Tests schon einen Hinweis darauf geben, wo der Fehler zu suchen ist.
-Hierfür ist es sinnvoll, den Code in überschaubare Funktionen mit einer klaren Aufgabe
-zu zerlegen, die jeweils für sich getestet werden können. Das Schreiben von Tests kann
-hier dazu beitragen, die logische Gliederung des Codes zu verbessern. 
+Um von dem Fehlschlagen eines Tests möglichst direkt auf die Fehlerursache
+schließen zu können, empfiehlt es sich, den Code in überschaubare Funktionen mit
+einer klaren Aufgabe zu zerlegen, die jeweils für sich getestet werden können.
+Das Schreiben von Tests kann dabei nicht nur die Korrektheit des Codes
+überprüfen helfen, sondern auch dazu beitragen, die logische Gliederung des
+Codes zu verbessern. Das Testen einzelner Codeeinheiten nennt man *Unit
+testing*, auf das wir uns in diesem Kapitel konzentrieren werden. Zusätzlich
+wird man aber auch das Zusammenwirken der einzelnen Teile eines Programms
+im Rahmen von Integrationstests überprüfen.
+
+Beim Schreiben von Tests sollte man darauf achten, dass die einzelnen Test
+möglichst unabhängig voneinander sind, also jeweils spezifische Aspekte des
+Codes überprüfen. Dabei lohnt es sich, auf Randfälle zu achten, also
+Situationen, die nicht dem allgemeinen Fall entsprechen und denen beim
+Programmieren eventuell nicht die notwendige Aufmerksamkeit zu Teil wird. Als
+Beispiel könnte man die Auswertung einer Funktion mit Hilfe einer
+Rekursionsformel nennen. Dabei wäre auch auf Argumente zu achten, bei denen die
+Rekursionsformel nicht verwendet wird, sondern direkt deren Anfangswert
+zurückzugeben ist. 
+
+Außerdem sollte man es sich zum Ziel setzen, den Code möglichst vollständig
+durch Tests abzudecken. [#coverage]_ Werden Teile des Codes durch keinen Test ausgeführt, so
+könnten sich dort Fehler verstecken. Andererseits ist es nicht nötig,
+Bibliotheken, die bereits von Haus aus eigene umfangreiche Testsuites besitzen,
+zu testen. Man wird also zum Beispiel darauf verzichten, Funktionen der Python
+Standard Library zu testen.
 
 Aus den verschiedenen Möglichkeiten, in Python einen Testrahmen aufzubauen, wollen wir
 zwei herausgreifen. Die erste basiert auf dem ``doctest``-Modul, das es erlaubt, einfache
@@ -606,6 +625,8 @@ Dabei haben wir die Genauigkeitsanforderung auf 7 Dezimalstellen festgelegt. Die
 Tatsache, dass es zu keiner ``AssertionError``-Ausnahme kommt, bedeutet, dass 
 alle Arrayelemente im Rahmen der geforderten Genauigkeit übereinstimmen.
 
+.. [#coverage] Zur Überprüfung der Codeabdeckung durch Tests kann ``coverage.py``
+   dienen, dessen Dokumentation unter `<http://coverage.readthedocs.io>`_ zu finden ist.
 .. [#numpytest] Eine detaillierte Liste der verschiedenen Funktionen findet man in der 
             `Dokumentation zum Test Support <http://docs.scipy.org/doc/numpy-dev/reference/routines.testing.html>`_.
 
