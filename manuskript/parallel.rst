@@ -1,4 +1,4 @@
-===============================
+==============================
 Aspekte des parallelen Rechnens
 ===============================
 
@@ -263,6 +263,10 @@ bis jetzt von der Parallelisierung Gebrauch gemacht haben::
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
         1   20.109   20.109   20.127   20.127 m3.py:4(mandelbrot)
+
+Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen,
+dass wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen
+Prozessen zur parallelen Bearbeitung übergeben.
 
 
 
