@@ -343,6 +343,8 @@ hier verwendeten Hardware immerhin einen Faktor 4 bis 5 betragen.
    :width: 7cm
    :align: center
 
+.. _cProfile:
+
 ----------------------
 Das Modul ``cProfile``
 ----------------------

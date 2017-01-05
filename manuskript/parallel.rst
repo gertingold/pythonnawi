@@ -73,7 +73,7 @@ verzichten, diese Techniken weiter zu diskutieren.
 Die am häufigsten verwendete Implementation von Python, nämlich das in C
 geschriebene CPython, verwendet einen sogenannten *Global Interpreter Lock*
 (GIL). Dieser verhindert, dass ein einzelner Python-Prozess mehrere Threads
-parallel ausführen kann. Es ist zwar durchaus möglich, in Python [#CPython]_
+parallel ausführen kann. Es ist zwar durchaus möglich, in Python\ [#CPython]_
 Multithreading zu verwenden. Dann sorgt aber der GIL dafür, dass die
 verschiedenen Threads in Wirklichkeit abwechselnd immer wieder Rechenzeit
 bekommen, so dass nur der Anschein von paralleler Verarbeitung erweckt wird.
@@ -103,7 +103,7 @@ eine Reihe von Operationen aus dem Bereich der linearen Algebra bei der
 Verwendung einer geeignet kompilierten Version von NumPy. Hierzu zählt das mit
 der Anaconda-Distribution ausgelieferte, mit der Intel® Math Kernel
 Library (Intel® MKL) kompilierte NumPy. Eine andere Möglichkeit, den GIL zu
-umgehen, bietet Cython [#cython]_, mit dem C-Erweiterungen aus Python-Code
+umgehen, bietet Cython\ [#cython]_, mit dem C-Erweiterungen aus Python-Code
 erzeugt werden können. Dabei lassen sich Code-Teile, die keine Python-Objekte
 verwenden, in einem ``nogil``-Kontext außerhalb der Kontrolle des GIL ausführen
 (siehe auch das Ende des Abschnitts :ref:`with`).
@@ -113,6 +113,157 @@ verwenden, in einem ``nogil``-Kontext außerhalb der Kontrolle des GIL ausführe
 ------------------------------
 Parallelverarbeitung in Python
 ------------------------------
+
+Die Verwendung von parallelen Prozessen in Python wollen wir anhand eines
+konkreten Beispiels diskutieren, nämlich der Berechnung der Mandelbrotmenge,
+die in einer graphischen Darstellung die sogenannten Apfelmännchen ergibt.
+Die Mandelbrotmenge ist mathematisch als die Menge der komplexen Zahlen
+:math:`c` definiert, für die die durch die Iterationsvorschrift
+
+.. math::
+
+   z_{n+1} = z_n^2+c
+
+gegebene Reihe mit dem Anfangselement :math:`z_0=0` beschränkt bleibt. Da
+bekannt ist, dass die Reihe nicht beschränkt ist, wenn :math:`|z| > 2` erreicht
+wird, genügt es, die Iteration bis zu diesem Schwellwert durchzuführen. Die
+graphische Darstellung wird dann besonders ansprechend, wenn man die Punkte
+außerhalb der Mandelbrotmenge farblich in Abhängigkeit von der Zahl der
+Iterationsschritte darstellt, die bis zum Überschreiten des Schwellwerts von
+:math:`2` erforderlich waren. Da die Iterationen für verschiedene Werte von
+:math:`c` vollkommen unabhängig voneinander sind, ist dieses Problem
+*embarrassingly parallel* und man kann sehr leicht verschiedenen Prozessen
+unterschiedliche Werte von :math:`c` zur Bearbeitung zuordnen. Am Ende muss man
+dann lediglich alle Ergebnisse einsammeln und graphisch darstellen.
+
+Wir beginnen zunächst mit einer einfachen Ausgangsversion eines Programms zur
+Berechnung der Mandelbrotmenge.
+
+.. sourcecode:: python
+   :linenos:
+
+   import matplotlib.pyplot as plt
+   import numpy as np
+   
+   def mandelbrot_iteration(c, nitermax):
+       z = 0
+       for n in range(nitermax):
+           if abs(z) > 2:
+               return n
+           z = z**2+c
+       return nitermax
+   
+   def mandelbrot(xmin, xmax, ymin, ymax, npts, nitermax):
+       data = np.empty(shape=(npts, npts), dtype=np.int)
+       dx = (xmax-xmin)/(npts-1)
+       dy = (ymax-ymin)/(npts-1)
+       for nx in range(npts):
+           x = xmin+nx*dx
+           for ny in range(npts):
+               y = ymin+ny*dy
+               data[ny, nx] = mandelbrot_iteration(x+1j*y, nitermax)
+       return data
+   
+   def plot(data):
+       plt.imshow(data, extent=(xmin, xmax, ymin, ymax),
+                  cmap='jet', origin='bottom', interpolation='none')
+       plt.show()
+   
+   nitermax = 2000
+   npts = 1000
+   xmin = -2
+   xmax = 1
+   ymin = -1.5
+   ymax = 1.5
+   data = mandelbrot(xmin, xmax, ymin, ymax, npts, nitermax)
+   # plot(data)
+
+Dabei erfolgt die Auswertung der Iterationsvorschrift in der Funktion
+``mandelbrot_iteration`` und die Funktion ``mandelbrot`` dient dazu, alle Punkte
+durchzugehen und die Ergebnisse im Array ``data`` zu sammeln. Bei der weiteren
+Überarbeitung ist die Funktion ``plot`` nützlich, um die korrekte Funktionsweise
+des Programms auf einfache Weise testen zu können. Für die Bestimmung der
+Rechenzeit mit Hilfe des ``cProfile``-Moduls kommentieren wir den Aufruf der
+``plot``-Funktion jedoch aus. Die Verwendung von ``cProfile`` ist im Kapitel
+:ref:`cProfile` beschrieben. Die wesentlichen Beiträge zur Rechenzeit lauten::
+
+      ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1000000  292.786    0.000  503.296    0.001 m1.py:4(mandelbrot_iteration)
+   340498946  210.511    0.000  210.511    0.000 {built-in method builtins.abs}
+           1    1.769    1.769  505.065  505.065 m1.py:12(mandelbrot)
+
+Hier fällt auf, dass die Berechnung des Absolutbetrags der komplexen Variable
+``z`` einen erheblichen Beitrag zur Rechenzeit liefert. Bevor man zur
+Parallelisierung des Codes übergeht, bietet es sich an, erst die Ausgangsversion
+zu optimieren. Die Berechnung des Absolutbetrags lässt sich vermeiden, wenn man
+nicht mit einer komplexen Variable rechnet, sondern Real- und Imaginärteil
+separat behandelt, wie die folgende Version der Funktionen
+``mandelbrot_iteration`` und ``mandelbrot`` zeigt.
+
+.. sourcecode:: python
+   :linenos:
+
+   def mandelbrot_iteration(cx, cy, nitermax):
+       x = 0
+       y = 0
+       for n in range(nitermax):
+           x2 = x*x
+           y2 = y*y
+           if x2+y2 > 4:
+               return n
+           x, y = x2-y2+cx, 2*x*y+cy
+       return nitermax
+   
+   def mandelbrot(xmin, xmax, ymin, ymax, npts, nitermax):
+       data = np.empty(shape=(npts, npts), dtype=np.int)
+       dx = (xmax-xmin)/(npts-1)
+       dy = (ymax-ymin)/(npts-1)
+       for nx in range(npts):
+           x = xmin+nx*dx
+           for ny in range(npts):
+               y = ymin+ny*dy
+               data[ny, nx] = mandelbrot_iteration(x, y, nitermax)
+       return data
+
+Bereits durch diese Umschreibung verkürzt sich die Rechenzeit auf knapp ein
+Viertel::
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  1000000  114.912    0.000  114.912    0.000 m2.py:4(mandelbrot_iteration)
+        1    1.813    1.813  116.725  116.725 m2.py:15(mandelbrot)
+
+Man kann jedoch vermuten, dass sich die Rechenzeit noch weiter verkürzen
+lässt, wenn man NumPy verwendet. In diesem Fall ist eine separate Behandlung
+der Iteration nicht mehr sinnvoll, so dass wir statt der Funktionen
+``mandelbrot_iteration`` und ``mandelbrot`` nur noch eine Funktion
+``mandelbrot`` haben, die folgendermaßen aussieht.
+
+.. sourcecode:: python
+   :linenos:
+
+   def mandelbrot(xmin, xmax, ymin, ymax, npts, nitermax):
+       cy, cx = np.mgrid[ymax:ymin:npts*1j, xmin:xmax:npts*1j]
+       x = np.zeros_like(cx)
+       y = np.zeros_like(cx)
+       data = np.zeros(cx.shape, dtype=np.int)
+       for n in range(nitermax):
+           x2 = x*x
+           y2 = y*y
+           notdone = x2+y2 < 4
+           data[notdone] = n
+           x[notdone], y[notdone] = (x2[notdone]-y2[notdone]+cx[notdone],
+                                     2*x[notdone]*y[notdone]+cy[notdone])
+       return data
+
+Hierbei benutzen wir *fancy indexing*, da nicht alle Elemente des Arrays
+bis zum Ende iteriert werden müssen. Die Rechenzeit reduziert sich nochmals
+um fast einen Faktor Sechs, so dass wir gegenüber der ersten Version des
+Programms einen Faktor 25 an Rechenzeit eingespart haben, ohne dass wir
+bis jetzt von der Parallelisierung Gebrauch gemacht haben::
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1   20.109   20.109   20.127   20.127 m3.py:4(mandelbrot)
+
 
 
 .. image:: images/parallel/parallel_time.*

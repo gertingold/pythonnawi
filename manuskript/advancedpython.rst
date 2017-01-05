@@ -1552,6 +1552,8 @@ damit den vorzeitigen Programmabbruch und gibt dem Hauptprogramm die Chance,
 in geeigneter Weise zu reagieren. Dies geschieht hier, indem wiederum der
 ``ZeroDivisionError`` abgefangen wird.
 
+.. _with:
+
 ==============================
 Kontext mit ``with``-Anweisung
 ==============================
