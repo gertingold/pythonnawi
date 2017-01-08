@@ -268,6 +268,11 @@ Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen,
 dass wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen
 Prozessen zur parallelen Bearbeitung übergeben.
 
+Seit Python 3.2 stellt die Python-Standardbibliothek hierfür das
+``concurrent.futures``-Modul zur Verfügung. Der Name ``concurrent`` deutet
+hier auf das gleichzeitige Abarbeiten von Aufgaben hin, während sich
+``futures`` auf Objekte beziehen, die zu einem späteren Zeitpunkt das
+gewünschte Resultat bereitstellen.
 
 
 .. image:: images/parallel/parallel_time.*
