@@ -170,7 +170,7 @@ Berechnung der Mandelbrotmenge.
        plt.show()
    
    nitermax = 2000
-   npts = 1000
+   npts = 1024
    xmin = -2
    xmax = 1
    ymin = -1.5
@@ -185,12 +185,20 @@ durchzugehen und die Ergebnisse im Array ``data`` zu sammeln. Bei der weiteren
 des Programms auf einfache Weise testen zu können. Für die Bestimmung der
 Rechenzeit mit Hilfe des ``cProfile``-Moduls kommentieren wir den Aufruf der
 ``plot``-Funktion jedoch aus. Die Verwendung von ``cProfile`` ist im Kapitel
-:ref:`cProfile` beschrieben. Die wesentlichen Beiträge zur Rechenzeit lauten::
+:ref:`cProfile` beschrieben. Im Folgenden sind die wesentlichen Beiträge zur
+Rechenzeit für zwei verschiedene Prozessoren gezeigt, nämlich einen i7-3770::
 
       ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-     1000000  292.786    0.000  503.296    0.001 m1.py:4(mandelbrot_iteration)
-   340498946  210.511    0.000  210.511    0.000 {built-in method builtins.abs}
-           1    1.769    1.769  505.065  505.065 m1.py:12(mandelbrot)
+     1048576  306.599    0.000  528.491    0.001 m1.py:4(mandelbrot_iteration)
+   357051172  221.893    0.000  221.893    0.000 {built-in method builtins.abs}
+           1    1.892    1.892  530.383  530.383 m1.py:12(mandelbrot)
+
+und einen i5-4690::
+
+      ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1048576   95.877    0.000  114.408    0.000 m1.py:4(mandelbrot_iteration)
+   357051172   18.530    0.000   18.530    0.000 {built-in method builtins.abs}
+           1    0.424    0.424  114.832  114.832 m1.py:12(mandelbrot)
 
 Hier fällt auf, dass die Berechnung des Absolutbetrags der komplexen Variable
 ``z`` einen erheblichen Beitrag zur Rechenzeit liefert. Bevor man zur
