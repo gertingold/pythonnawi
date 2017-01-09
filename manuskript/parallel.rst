@@ -288,16 +288,110 @@ Parallelisierung haben wir die Rechenzeit für den i7-3770-Prozessor um
 einen Faktor 25 reduziert, für den i5-4690-Prozessor bei einer deutlich
 geringeren anfänglichen Rechenzeit immerhin fast um einen Faktor 6.
 
-Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen,
-dass wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen
-Prozessen zur parallelen Bearbeitung übergeben.
+Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen, dass
+wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen Prozessen
+zur parallelen Bearbeitung übergeben.  Seit Python 3.2 stellt die
+Python-Standardbibliothek hierfür das ``concurrent.futures``-Modul zur
+Verfügung. Der Name ``concurrent`` deutet hier auf das gleichzeitige Abarbeiten
+von Aufgaben hin, während sich ``futures`` auf Objekte beziehen, die zu einem
+späteren Zeitpunkt das gewünschte Resultat bereitstellen.
 
-Seit Python 3.2 stellt die Python-Standardbibliothek hierfür das
-``concurrent.futures``-Modul zur Verfügung. Der Name ``concurrent`` deutet
-hier auf das gleichzeitige Abarbeiten von Aufgaben hin, während sich
-``futures`` auf Objekte beziehen, die zu einem späteren Zeitpunkt das
-gewünschte Resultat bereitstellen.
+Um eine parallele Bearbeitung der
+Mandelbrotmenge zu ermöglichen, teilen wir den gesamten Wertebereich
+der zu betrachtenden komplexen Zahlen :math:`c` in eine Anzahl von Kacheln
+auf, die von den einzelnen Prozessen bearbeitet werden. Die folgende
+Abbildung zeigt, wie 16 Kacheln von vier Prozessen abgearbeitet wurden,
+wobei jeder Prozess durch eine eigene Frage dargestellt ist. In diesem
+speziellen Lauf haben zwei Prozesse nur drei Kacheln bearbeitet, während
+die beiden anderen Prozesse fünf Kacheln bearbeitet haben.
 
+.. image:: images/parallel/mandelbrot_tiles.*
+           :width: 6cm
+           :align: center
+
+Im Folgenden sind die wesentlichen Codeteile dargestellt, die für die
+parallele Berechnung der Mandelbrotmenge benötigen.
+
+.. sourcecode:: python
+   :linenos:
+
+   from concurrent import futures
+   from itertools import product
+   from functools import partial
+   import time
+   
+   import numpy as np
+   
+   def mandelbrot_tile(nitermax, nx, ny, cx, cy):
+       x = np.zeros_like(cx)
+       y = np.zeros_like(cx)
+       data = np.zeros(cx.shape, dtype=np.int)
+       for n in range(nitermax):
+           x2 = x*x
+           y2 = y*y
+           notdone = x2+y2 < 4
+           data[notdone] = n
+           x[notdone], y[notdone] = (x2[notdone]-y2[notdone]+cx[notdone],
+                                     2*x[notdone]*y[notdone]+cy[notdone])
+       return (nx, ny, data)
+   
+   def mandelbrot(xmin, xmax, ymin, ymax, npts, nitermax, ndiv, max_workers=4):
+       start = time.time()
+       cy, cx = np.mgrid[ymin:ymax:npts*1j, xmin:xmax:npts*1j]
+       nlen = npts//ndiv
+       paramlist = [(nx, ny,
+                     cx[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen],
+                     cy[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen])
+                    for nx, ny in product(range(ndiv), repeat=2)]
+       with futures.ProcessPoolExecutor(max_workers=max_workers) as executors:
+           wait_for = [executors.submit(partial(mandelbrot_tile, nitermax),
+                                                nx, ny, cx, cy)
+                       for (nx, ny, cx, cy) in paramlist]
+           results = [f.result() for f in futures.as_completed(wait_for)]
+       data = np.zeros(cx.shape, dtype=np.int)
+       for nx, ny, result in results:
+           data[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen] = result
+       return time.time()-start, data
+
+Die Funktion ``mandelbrot_tile`` ist eine leichte Anpassung der zuvor
+besprochenen Funktion ``mandelbrot``. Der wesentliche Unterschied besteht darin,
+dass in der vorigen Version das NumPy-Array für die Variable :math:`c` in der
+Funktion selbst erzeugt wurde. Nun werden zwei Arrays mit Real- und Imaginärteil
+explizit übergeben.  Neu ist die Funktion ``mandelbrot`` in den Zeilen 21 bis
+37. Neben den Grenzen ``xmin``, ``xmax``, ``ymin`` und ``ymax`` der zu
+betrachtenden Region, der Zahl der Punkte ``npts`` je Dimension und der
+maximalen Zahl von Iterationen ``nitermax`` gibt es noch zwei weitere Variablen.
+``ndiv`` gibt die Zahl der Unterteilungen je Dimension der Gesamtregion an.
+Ein Wert von 4 entspricht den 16 Bereichen in der vorigen Abbildung. Die
+maximale Anzahl von parallelen Prozessen ist durch ``max_workers`` gegeben, das
+wir defaultmäßig auf den Wert 4 setzen, weil wir von einem Prozessor mit vier
+Kernen ausgehen.
+
+Da wir die Laufzeit bei mehreren parallelen Prozessen nicht mit dem
+``cProfile``-Modul bestimmen können, halten wir in Zeile 22 die Startzeit fest
+und berechnen in Zeile 37 die Laufzeit. Für die Parallelverarbeitung benötigen
+wir nun zunächst eine Liste von Aufgaben, die durch entsprechende Parameter
+spezifiziert sind. Dazu werden in Zeile 23 zwei zweidimensionale Arrays angelegt,
+die das Gitter der komplexen Zahlen :math:`c` definieren. Außerdem wird in 
+Zeile 24 die Seitenlänge der Unterbereiche bestimmt. Damit kann nun in den
+Zeilen 25–28 die Parameterliste erzeugt werden. Hierzu gehen wir mit Hilfe von
+``product`` aus dem in Zeile 2 importierten ``itertools``-Modul durch alle
+Indizes ``nx`` und ``ny`` der Unterbereiche. Die Parameterliste enthält diese
+Indizes, die wir später wieder benötigen, um das Resultat zusammenzusetzen
+sowie die beiden Arrays mit den zugehörigen Werten des Real- und Imaginärteils
+von :math:`c`. 
+
+Der zentrale Teil folgt nun in den Zeilen 29 bis 33, wo wir in diesem Fall einen
+Kontext-Manager verwenden. Dieses Konzept hatten wir im Abschnitt :ref:`with`
+eingeführt. Es wird ein Pool von Prozessen angelegt, der die Aufgaben ausführen
+wird, die in Zeile 30 mit Hilfe der zuvor erstellten Parameterliste eingereicht
+werden. Da die ``submit``-Methode als Argumente eine Funktion sowie deren Argumente
+erwartet, haben wir hier mit Hilfe des in Zeile 3 importierten
+``functools``-Moduls eine partielle Funktion definiert, deren erstes Argument,
+also ``nitermax``, bereits angegeben ist. Nun bleibt noch auf die Ergebnisse zu
+warten und die Resultate in einer Liste zu sammeln. Dies geschieht in Zeile 33
+mit Hilfe der ``futures.as_completed``-Funktion. Es bleibt nun nur noch, in
+den Zeilen 34 bis 36 das Ergebnis in einem einzigen Array zusammenzufassen.
 
 .. image:: images/parallel/parallel_time.*
            :height: 6cm
@@ -305,10 +399,6 @@ gewünschte Resultat bereitstellen.
 
 .. image:: images/parallel/parallel.*
            :width: 100%
-           :align: center
-
-.. image:: images/parallel/mandelbrot_tiles.*
-           :width: 6cm
            :align: center
 
 -----
