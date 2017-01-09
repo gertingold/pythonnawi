@@ -200,8 +200,10 @@ und einen i5-4690::
    357051172   18.530    0.000   18.530    0.000 {built-in method builtins.abs}
            1    0.424    0.424  114.832  114.832 m1.py:12(mandelbrot)
 
-Hier fällt auf, dass die Berechnung des Absolutbetrags der komplexen Variable
-``z`` einen erheblichen Beitrag zur Rechenzeit liefert. Bevor man zur
+Es zeigen sich deutliche Unterschiede, wobei aber in beiden Fällen die
+Berechnung des Absolutbetrags der komplexen Variable ``z`` für einen
+wesentlichen Beitrag zur Rechenzeit verantwortlich ist. Besonders deutlich ist
+dies im ersten Fall, wo dieser Beitrag über 40 Prozent ausmacht. Bevor man zur
 Parallelisierung des Codes übergeht, bietet es sich an, erst die Ausgangsversion
 zu optimieren. Die Berechnung des Absolutbetrags lässt sich vermeiden, wenn man
 nicht mit einer komplexen Variable rechnet, sondern Real- und Imaginärteil
@@ -233,12 +235,18 @@ separat behandelt, wie die folgende Version der Funktionen
                data[ny, nx] = mandelbrot_iteration(x, y, nitermax)
        return data
 
-Bereits durch diese Umschreibung verkürzt sich die Rechenzeit auf knapp ein
-Viertel::
+Durch diese Umschreibung verkürzt sich die Rechenzeit insbesondere für den
+i7-3770-Prozessor drastisch::
 
-   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-  1000000  114.912    0.000  114.912    0.000 m2.py:4(mandelbrot_iteration)
-        1    1.813    1.813  116.725  116.725 m2.py:15(mandelbrot)
+    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   1048576  121.770    0.000  121.770    0.000 m2.py:4(mandelbrot_iteration)
+         1    1.984    1.984  123.754  123.754 m2.py:15(mandelbrot)
+
+Aber auch für den i5-4690-Prozessor ergibt sich eine Verkürzung der Rechenzeit::
+
+    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   1048576   85.981    0.000   85.981    0.000 m2.py:4(mandelbrot_iteration)
+         1    0.330    0.330   86.312   86.312 m2.py:15(mandelbrot
 
 Man kann jedoch vermuten, dass sich die Rechenzeit noch weiter verkürzen
 lässt, wenn man NumPy verwendet. In diesem Fall ist eine separate Behandlung
@@ -264,13 +272,21 @@ der Iteration nicht mehr sinnvoll, so dass wir statt der Funktionen
        return data
 
 Hierbei benutzen wir *fancy indexing*, da nicht alle Elemente des Arrays
-bis zum Ende iteriert werden müssen. Die Rechenzeit reduziert sich nochmals
-um fast einen Faktor Sechs, so dass wir gegenüber der ersten Version des
-Programms einen Faktor 25 an Rechenzeit eingespart haben, ohne dass wir
-bis jetzt von der Parallelisierung Gebrauch gemacht haben::
+bis zum Ende iteriert werden müssen. Es ergibt sich nochmal eine signifikante
+Reduktion der Rechenzeit. Der i7-3770-Prozessor mit ::
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-        1   20.109   20.109   20.127   20.127 m3.py:4(mandelbrot)
+        1   21.066   21.066   21.088   21.088 m3.py:4(mandelbrot)
+
+und der i5-4690-Prozessor mit ::
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1   20.173   20.173   20.191   20.191 m3.py:4(mandelbrot)
+
+unterscheiden sich kaum noch in der benötigten Rechenzeit. Bereits ohne
+Parallelisierung haben wir die Rechenzeit für den i7-3770-Prozessor um
+einen Faktor 25 reduziert, für den i5-4690-Prozessor bei einer deutlich
+geringeren anfänglichen Rechenzeit immerhin fast um einen Faktor 6.
 
 Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen,
 dass wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen
