@@ -210,7 +210,8 @@ latex_elements = {
             \DeclareUnicodeCharacter{2248}{\ensuremath{\approx}}
 ''' % (latex_documents[0][2], latex_documents[0][2]),
 
-'printindex': ''
+'printindex': '',
+'sphinxsetup': 'VerbatimBorderColor={rgb}{1,1,1},VerbatimColor={rgb}{0.95,0.95,0.95}'
 }
 
 # The name of an image file (relative to this directory) to place at the top of
