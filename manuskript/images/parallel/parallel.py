@@ -7,28 +7,33 @@ import time
 import numpy as np
 from pyx import canvas, color, deco, path, text, unit
 
-def mandelbrot_iteration(niter, nx, ny, c):
+def mandelbrot_tile(nitermax, nx, ny, cx, cy):
     start = time.time()
-    z = np.zeros_like(c)
-    result = np.zeros(c.shape, dtype=int)
-    for n in range(niter):
-        notdone = np.abs(z) < 2
-        result[notdone] = n
-        z[notdone] = z[notdone]**2+c[notdone]
+    x = np.zeros_like(cx)
+    y = np.zeros_like(cx)
+    data = np.zeros(cx.shape, dtype=np.int)
+    for n in range(nitermax):
+        x2 = x*x
+        y2 = y*y
+        notdone = x2+y2 < 4
+        data[notdone] = n
+        x[notdone], y[notdone] = (x2[notdone]-y2[notdone]+cx[notdone],
+                                  2*x[notdone]*y[notdone]+cy[notdone])
     ende = time.time()
-    return (nx, ny, os.getpid(), start, ende, result)
+    return (nx, ny, os.getpid(), start, ende, data)
 
 def mandelbrot(xmin, xmax, width, ymin, ymax, height,
                npts, ndiv, niter, max_workers=4):
-    y, x = np.ogrid[ymin:ymax:height*1j, xmin:xmax:width*1j]
-    c = x+1j*y
+    y, x = np.mgrid[ymin:ymax:height*1j, xmin:xmax:width*1j]
     nlen = npts//ndiv
-    clist = [(nx, ny, c[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen])
+    clist = [(nx, ny,
+              x[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen],
+              y[nx*nlen:(nx+1)*nlen, ny*nlen:(ny+1)*nlen])
              for nx, ny in product(range(ndiv), repeat=2)]
     start = time.time()
     ex = futures.ProcessPoolExecutor(max_workers=max_workers)
-    wait_for = [ex.submit(partial(mandelbrot_iteration, niter), nx, ny, c)
-                for (nx, ny, c) in clist]
+    wait_for = [ex.submit(partial(mandelbrot_tile, niter), nx, ny, cx, cy)
+                for (nx, ny, cx, cy) in clist]
     results = [f.result()[0:5] for f in futures.as_completed(wait_for)]
     ende = time.time()
     processids = sorted(set([r[2] for r in results]))
@@ -36,7 +41,7 @@ def mandelbrot(xmin, xmax, width, ymin, ymax, height,
     return (len(processdict), start, ende,
             [(processdict[r[2]], r[3]-start, r[4]-start) for r in results])
 
-npts = 2048
+npts = 1024
 xmin = -2
 xmax = 1
 width = npts
@@ -46,10 +51,10 @@ height = npts
 niter = 2000
 
 cnvs = canvas.canvas()
-unit.set(xscale=3, wscale=0.8)
-cellheight = 0.6
+unit.set(xscale=1.2, wscale=0.8)
+cellheight = 0.17
 
-for nr, ndiv in enumerate((2, 4, 8, 16)):
+for nr, ndiv in enumerate((2, 4, 8, 16, 32)):
     nrproc, start, ende, data = mandelbrot(xmin, xmax, width, ymin, ymax, height,
                       npts, ndiv, niter)
     offset = -(nrproc+1.2)*cellheight*nr
