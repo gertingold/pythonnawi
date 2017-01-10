@@ -51,7 +51,7 @@ height = npts
 niter = 2000
 
 cnvs = canvas.canvas()
-unit.set(xscale=1.2, wscale=0.8)
+unit.set(wscale=0.8)
 cellheight = 0.17
 
 for nr, ndiv in enumerate((2, 4, 8, 16, 32)):
