@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath('sphinxext'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.5'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -98,6 +98,7 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+numfig = True
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -195,6 +196,7 @@ latex_documents = [
 ]
 
 latex_elements = {
+'figure_align': 'tbp',
 # The paper size ('letterpaper' or 'a4paper').
 'papersize': 'a4paper',
 

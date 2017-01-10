@@ -296,25 +296,28 @@ Verfügung. Der Name ``concurrent`` deutet hier auf das gleichzeitige Abarbeiten
 von Aufgaben hin, während sich ``futures`` auf Objekte beziehen, die zu einem
 späteren Zeitpunkt das gewünschte Resultat bereitstellen.
 
-Um eine parallele Bearbeitung der
-Mandelbrotmenge zu ermöglichen, teilen wir den gesamten Wertebereich
-der zu betrachtenden komplexen Zahlen :math:`c` in eine Anzahl von Kacheln
-auf, die von den einzelnen Prozessen bearbeitet werden. Die folgende
-Abbildung zeigt, wie 16 Kacheln von vier Prozessen abgearbeitet wurden,
+Um eine parallele Bearbeitung der Mandelbrotmenge zu ermöglichen, teilen wir den
+gesamten Wertebereich der zu betrachtenden komplexen Zahlen :math:`c` in eine
+Anzahl von Kacheln auf, die von den einzelnen Prozessen bearbeitet werden. 
+:numref:`fig-mandelbrot_tiles` zeigt, wie 16 Kacheln von vier Prozessen abgearbeitet wurden,
 wobei jeder Prozess durch eine eigene Frage dargestellt ist. In diesem
-speziellen Lauf haben zwei Prozesse nur drei Kacheln bearbeitet, während
-die beiden anderen Prozesse fünf Kacheln bearbeitet haben.
+speziellen Lauf haben zwei Prozesse nur drei Kacheln bearbeitet, während die
+beiden anderen Prozesse fünf Kacheln bearbeitet haben.
 
-.. image:: images/parallel/mandelbrot_tiles.*
-           :width: 6cm
-           :align: center
+.. _fig-mandelbrot_tiles:
+
+.. figure:: images/parallel/mandelbrot_tiles.*
+   :width: 6cm
+
+   Bearbeitung der einzelnen Teilbereiche zur Berechnung der Mandelbrotmenge
+   durch vier Prozesse, die durch unterschiedliche Farben gekennzeichnet sind.
 
 Im Folgenden sind die wesentlichen Codeteile dargestellt, die für die
 parallele Berechnung der Mandelbrotmenge benötigen.
 
 .. sourcecode:: python
    :linenos:
-
+ 
    from concurrent import futures
    from itertools import product
    from functools import partial
