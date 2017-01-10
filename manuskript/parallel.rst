@@ -379,8 +379,8 @@ die das Gitter der komplexen Zahlen :math:`c` definieren. Außerdem wird in
 Zeile 24 die Seitenlänge der Unterbereiche bestimmt. Damit kann nun in den
 Zeilen 25–28 die Parameterliste erzeugt werden. Hierzu gehen wir mit Hilfe von
 ``product`` aus dem in Zeile 2 importierten ``itertools``-Modul durch alle
-Indizes ``nx`` und ``ny`` der Unterbereiche. Die Parameterliste enthält diese
-Indizes, die wir später wieder benötigen, um das Resultat zusammenzusetzen
+Indexpaare ``(nx, ny)`` der Unterbereiche. Die Parameterliste enthält diese
+Indizes, die wir später wieder benötigen, um das Resultat zusammenzusetzen,
 sowie die beiden Arrays mit den zugehörigen Werten des Real- und Imaginärteils
 von :math:`c`. 
 
@@ -388,21 +388,84 @@ Der zentrale Teil folgt nun in den Zeilen 29 bis 33, wo wir in diesem Fall einen
 Kontext-Manager verwenden. Dieses Konzept hatten wir im Abschnitt :ref:`with`
 eingeführt. Es wird ein Pool von Prozessen angelegt, der die Aufgaben ausführen
 wird, die in Zeile 30 mit Hilfe der zuvor erstellten Parameterliste eingereicht
-werden. Da die ``submit``-Methode als Argumente eine Funktion sowie deren Argumente
-erwartet, haben wir hier mit Hilfe des in Zeile 3 importierten
+werden. Da die ``submit``-Methode als Argumente eine Funktion sowie deren
+Argumente erwartet, haben wir hier mit Hilfe des in Zeile 3 importierten
 ``functools``-Moduls eine partielle Funktion definiert, deren erstes Argument,
-also ``nitermax``, bereits angegeben ist. Nun bleibt noch auf die Ergebnisse zu
-warten und die Resultate in einer Liste zu sammeln. Dies geschieht in Zeile 33
-mit Hilfe der ``futures.as_completed``-Funktion. Es bleibt nun nur noch, in
-den Zeilen 34 bis 36 das Ergebnis in einem einzigen Array zusammenzufassen.
+also ``nitermax``, bereits angegeben ist. 
 
-.. image:: images/parallel/parallel_time.*
-           :height: 6cm
-           :align: center
+Die Aufgaben werden nun, ohne dass wir uns darum weiter kümmern müssen,
+nacheinander von den Prozessen abgearbeitet. Wann dieser gesamte Vorgang
+abgeschlossen sein wird, ist nicht vorhersagbar. Daher wird in Zeile 33 mit
+Hilfe der Funktion ``futures.as_completed`` abgewartet, bis alle Aufgaben
+erledigt sind. Die Resultate werden in einer Liste gesammelt.  Es bleibt nun nur
+noch, in den Zeilen 34 bis 36 das Ergebnis in einem einzigen Array
+zusammenzufassen, um es zum Beispiel anschließend graphisch darzustellen.
 
-.. image:: images/parallel/parallel.*
-           :width: 100%
-           :align: center
+Es zeigt sich, dass auf den getesteten Prozessoren eine minimale Rechenzeit für
+die Mandelbrotmenge erreicht wird, wenn das zu behandelnde Gebiet in 64
+Teilgebiete unterteilt wird, also sowohl die reelle als auch die imaginäre
+Achse in acht Segmente unterteilt wird. Dann benötigt ein i7-3770-Prozessor
+noch etwa 4,4 Sekunden, während ein i5-4690-Prozessor 3 Sekunden benötigt.
+
+Interessant ist, wie die zeitliche Verteilung der Aufgaben auf die vier Prozesse
+erfolgt. Dies ist in :numref:`fig-parallel` für verschiedene Unterteilungen
+der Achsen zu sehen. Hat man nur vier Aufgaben für vier Prozesse zur Verfügung,
+so ist die Rechenzeit durch die am längsten laufende Aufgabe bestimmt.
+Gleichzeitig sieht man bei :math:`n=2`, dass der Start des Prozesses bei dem
+in diesem Fall relativ hohen Speicherbedarf zu einer merklichen Verzögerung
+führt. Ganz grundsätzlich ist der Kommunikationsbedarf beim Starten und Beenden
+einer Aufgabe in einem Prozess mit einem gewissen Zeitbedarf verbunden. Insofern
+ist zu erwarten, dass sich zu viele kleine Aufgaben negativ auf die Rechenzeit
+auswirken. Für :math:`n=4` und :math:`n=8` beobachten wir aber zunächst eine
+Verkürzung der Rechenzeit. Dies hängt zum einen damit zusammen, dass jeder
+Prozess letztlich ähnlich lange für die Abarbeitung seiner Aufgaben benötigt.
+Bei :math:`n=4` ist deutlich zu sehen, dass sich die Anzahl der bearbeiteten
+Aufgaben von Prozess zu Prozess erheblich unterscheiden kann.
+
+.. _fig-parallel:
+
+.. figure:: images/parallel/parallel.*
+   :width: 100%
+   
+   Verteilung der Teilaufgaben für die Berechnung der Mandelbrotmenge
+   auf vier Prozesse in Abhängigkeit von der Anzahl der Segmente je Achse.
+
+Außerdem wird die Rechenzeit unter Umständen wesentlich durch den Umfang der
+in einem Prozess zu bearbeitenden Daten bestimmt. Dies hängt damit zusammen,
+dass die Versorgung des Prozessors mit Daten einen erheblichen Engpass
+darstellen kann. Aus diesem Grund werden zwischen dem Hauptspeicher und dem
+Prozessor so genannte Caches implementiert, die einen schnelleren Datenzugriff
+erlauben, die jedoch in ihrer Größe begrenzt sind. Daher kann es für die
+Rechengeschwindigkeit förderlich sein, die für die individuelle Aufgabe
+erforderliche Datenmenge nicht zu groß werden zu lassen.
+
+Dies wird an :numref:`fig-parallel_time` deutlich. Betrachten wir zunächst die
+gestrichelten Kurven, bei denen die Rechenzeit für die Gesamtaufgabe, also für
+:math:`n=1`, durch die Rechenzeit für die Parallelverarbeitung für verschiedene
+Werte von :math:`n` geteilt wurde. Obwohl nur vier Prozesse verwendet wurden,
+findet man unter gewissen Bedingungen eine Beschleunigung, die über dem
+Vierfachen liegt. Bei den zugehörigen Aufgabengrößen können die Caches offenbar
+sehr gut genutzt werden. Eine vom Verhalten der Caches unabhängige Einschätzung
+des Einflusses der Parallelisierung erhält man durch Vergleich der parallelen
+Abarbeitung der Teilaufgaben mit der sequentiellen Abarbeitung der gleichen
+Teilaufgaben. Die zugehörige Beschleunigung ist durch die durchgezogenen Kurven
+dargestellt. Hier zeigt sich, dass ein Verhältnis von vier entsprechend der
+vier Prozesse nahezu erreicht werden kann, wenn die Größe der Teilaufgaben nicht
+zu groß gewählt ist.
+
+.. _fig-parallel_time:
+
+.. figure:: images/parallel/parallel_time.*
+   :height: 6cm
+
+   Die Beschleunigung durch Parallelisierung bei der Berechnung der
+   Mandelbrotmenge ist für die zwei Prozessortypen i7-3770 (schwarze Punkte)
+   und i5-4690 (weiße Punkte) als Funktion der Unterteilung der Achsen
+   dargestellt. Die gestrichelten Kurven zeigen das Verhältnis der Rechenzeit
+   für das Gesamtproblem zur Rechenzeit für die parallelisierte Variante,
+   während die durchgezogenen Kurven das Verhältnis der Rechenzeit für die
+   sequentielle Abarbeitung der Teilaufgaben zur Rechenzeit für die 
+   parallele Abarbeitung zeigen.
 
 -----
 Numba
