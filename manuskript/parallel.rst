@@ -471,7 +471,150 @@ zu groß gewählt ist.
 Numba
 -----
 
+Im vorigen Abschnitt haben wir gesehen, wie man mit Hilfe von NumPy und durch
+Parallelisierung ein Programm beschleunigen kann. Dies ging in dem Beispiel
+der Mandelbrotmenge relativ einfach, da natürlicherweise Arrays verwendet werden
+konnten und zudem die Behandlung der einzelnen Teilprobleme keine Kommunikation
+untereinander erforderte. Neben NumPy und der Parallelisierung gibt es noch
+andere Optionen, um Code zu beschleunigen, die sich zum Teil aktuell sehr
+intensiv weiterentwickelt werden, so dass sich die Einsatzmöglichkeiten unter
+Umständen zukünftig schnell erweitern können. Daher soll in diesem Abschnitt
+auch nur ein Eindruck von anderen Möglichkeiten gegeben werden, ein Programm
+zu beschleunigen.
+
+Wir greifen hier speziell Numba [#numba-doc]_ heraus, da es unter anderem für
+das numerische Arbeiten im Zusammenhang mit NumPy konzipiert ist und auch
+Parallelverarbeitung unterstützt. Zentral für Numba ist die sogenannte *Just in
+Time* (JIT) Kompilierung. Hierbei werden Funktionen in ausführbaren Code
+übersetzt, der anschließend schneller ausgeführt werden kann als dies der
+Python-Intepreter tun würde. Während in Python der Datentyp der
+Funktionsargumente nicht spezifiziert ist, sieht sich Numba beim
+Funktionsaufruf die tatsächlich verwendeten Datentypen an und erzeugt
+entsprechenden ausführbaren Code. Bei nächsten Aufruf mit der gleichen
+Signatur, also mit den gleichen Datentypen der Argumente, kann auf diesen Code
+zurückgegriffen werden. Andernfalls wird bei Bedarf eine andere Version des
+ausführbaren Codes erstellt.
+
+Wir wollen dies an einem einfachen Beispiel illustrieren, in dem näherungsweise
+die riemannsche Zetafunktion
+
+.. math::
+
+   \zeta(s) = \sum_{n=1}^\infty\frac{1}{n^s}
+
+berechnet wird. Der im folgenden Code implementierte Algorithmus ist nicht
+optimal für die Berechnung der Zetafunktion, aber dies ist für unser Beispiel
+nicht relevant. Ohne Verwendung von Numba könnte unser Code wie folgt aussehen:
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+
+   def zeta(x, nmax):
+       summe = 0
+       for n in range(1, nmax+1):
+           summe = summe+1/(n**x)
+       return summe
+   
+   nmax = 100000000
+   start = time.time()
+   print(zeta(2, nmax))
+   print('Zeit:', time.time()-start)
+
+Da hier die Summe nur über endlich viele Terme ausgeführt wird sei erwähnt, 
+dass :math:`\zeta(2)=\pi^2/6`.
+
+Für die Verwendung mit Numba müssen wir lediglich Numba importieren (Zeile 2)
+und die Funktion mit einem Dekorator (Zeile 4) versehen:
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+   import numba
+
+   @numba.jit
+   def zeta(x, nmax):
+       summe = 0
+       for n in range(1, nmax+1):
+           summe = summe+1/(n**x)
+       return summe
+   
+   nmax = 100000000
+   start = time.time()
+   print(zeta(2, nmax))
+   print('Zeit:', time.time()-start)
+
+Vergleichen wir die beiden Laufzeiten, so erhalten wir auf dem gleichen Rechner
+im ersten Fall etwa 33,4 Sekunden, im zweiten Fall dagegen nur 0,6 Sekunden.
+Wir können uns am Ende dieses Codes anzeigen lassen, welche Signatur von Numba
+kompiliert wurde, indem wir die folgende Zeile anhängen:
+
+.. sourcecode:: python
+
+   print(zeta.signatures)
+
+Das Ergebnis lautet::
+
+   [(int64, int64)]
+
+Diese Liste von Signaturen enthält nur einen Eintrag, da wir die Funktion ``zeta``
+mit zwei Integer-Argumenten aufgerufen haben. Wie in NumPy können Integers hier
+nicht beliebig lang werden, sondern sind in diesem Beispiel 8 Bytes lang. Es besteht
+also die Gefahr des Überlaufs. So kommt es in unserem Beispiel zur einer Division
+durch Null, wenn man die Variable ``x`` auf den Wert :math:``3`` setzt. Bereits
+vor der Division durch Null wird aufgrund des Überlaufs durch negative Zahlen
+dividiert, so dass die Summe unsinnige Werte liefert. Die Gefahr des Überlaufs
+muss also bedacht werden.
+
+Übergibt man auch Gleitkomma- oder komplexe Zahlen für das Argument ``x``,
+so muss Numba für diese neuen Signaturen eine Kompilation durchführen.
+Der Code
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+   import numba
+   
+   @numba.jit
+   def zeta(x, nmax):
+       summe = 0
+       for n in range(1, nmax+1):
+           summe = summe+1/(n**x)
+       return summe
+   
+   nmax = 100000000
+   for x in (2, 2.5, 2+1j):
+       start = time.time()
+       print('ζ({}) = {}'.format(x, zeta(x, nmax)))
+       print('Zeit: {:5.2f}s\n'.format(time.time()-start))
+   
+   print(zeta.signatures)
+
+liefert die Ausgabe::
+
+   ζ(2) = 1.644934057834575
+   Zeit:  0.59s
+   
+   ζ(2.5) = 1.341487257103954
+   Zeit:  5.52s
+   
+   ζ((2+1j)) = (1.1503556987382961-0.43753086346605924j)
+   Zeit: 13.41s
+   
+   [(int64, int64), (float64, int64), (complex128, int64)]
+
+Wir sehen zum einen, dass die Rechendauer vom Datentyp der Variable ``x``
+abhängt, und zum anderen, dass die Kompilierung in der Tat für drei
+verschiedene Signaturen durchgeführt wurde.
+
+
+
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
         ist zum Beispiel das in Java geschriebene Jython.
 .. [#cython] Cython sollte nicht mit CPython verwechselt werden.
+.. [#numba-doc] Für weitere Informationen siehe die jeweils
+        `aktuelle Dokumentation <http://numba.pydata.org/doc.html>`.
