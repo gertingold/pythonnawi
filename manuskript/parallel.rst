@@ -610,6 +610,15 @@ Wir sehen zum einen, dass die Rechendauer vom Datentyp der Variable ``x``
 abhängt, und zum anderen, dass die Kompilierung in der Tat für drei
 verschiedene Signaturen durchgeführt wurde.
 
+Mit Hilfe von Numba können wir zudem Funktionen leicht in universelle
+Funktionen, also *ufuncs* umwandeln, die wir in Abschnitt :ref:`ufuncs`
+im Zusammenhang mit NumPy eingeführt hatten. Universelle Funktionen sind
+in der Lage, neben skalaren Argumenten auch Arrays als Argumente zu
+verarbeiten. Numba erlaubt es zudem noch, die Funktionsauswertung für
+die Werte des Arrays in mehreren Threads parallel auszuführen. Alles
+was für die Umwandlung in eine universelle Funktion und die Verwendung
+mehrere Threads erforderlich ist, ist die Verwendung des Dekorators
+``vectorize``.
 
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
