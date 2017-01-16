@@ -620,6 +620,55 @@ was für die Umwandlung in eine universelle Funktion und die Verwendung
 mehrere Threads erforderlich ist, ist die Verwendung des Dekorators
 ``vectorize``.
 
+Im folgenden Codebeispiel geben wir als Argumente für den Dekorator die Signatur
+an, die Numba verwenden soll. Das Argument ``x`` hat den Datentyp ``float64``
+und kann auch ein entsprechendes Array sein. Das Argument ``n`` ist vom Datentyp
+``int64``. Der Datentyp des Resultats ist wiederum ``float64`` und steht als
+erstes in der Signatur vor dem Klammerpaar, das die Datentypen der Argumenten
+enthält. Das Argument ``target`` bekommt hier den Wert ``'parallel'``, um für
+ein Array die Parallelverarbeitung in mehreren Threads zu erlauben. Wird eine
+Parallelverarbeitung nicht gewünscht, zum Beispiel weil das Problem zu klein
+ist und das Starten eines Threads nur unnötig Zeit kosten würde, so kann man
+auch ``target='cpu'`` setzen. Hat man einen geeigneten Grafikprozessor, so
+kann dieser mit ``target='cuda'`` zur Rechnung herangezogen werden.
+
+
+.. sourcecode:: python
+   :linenos:
+   :name: code-zeta-numba-parallel
+
+   import time
+   import numpy as np
+   from numba import vectorize, float64, int64
+   
+   @vectorize([float64(float64, int64)], target='parallel')
+   def zeta(x, nmax):
+       summe = 0.
+       for n in range(nmax):
+           summe = summe+1./((n+1)**x)
+       return summe
+   
+   x = np.linspace(2, 10, 200, dtype=np.float64)
+   start = time.time()
+   y = zeta(x, 10000000)
+   print(time.time()-start)
+
+In :numref:`fig-numba_parallel` ist die Beschleunigung des Programms als
+Funktion der verwendeten Threads für einen i7-3770-Prozessor gezeigt, der
+vier Rechenkerne besitzt, auf dem aber durch sogenanntes Hyperthreading
+acht Threads parallel laufen können. Bei Verwendung von bis zur vier Threads
+steigt die Beschleunigung fast wie die Zahl der Threads an, während die
+Beschleunigung darüber merklich langsamer ansteigt. Dies hängt damit zusammen,
+dass dann Threads häufiger auf freie Ressourcen warten müssen.
+
+.. _fig-numba_parallel:
+
+.. figure:: images/parallel/numba_parallel.*
+   :height: 6cm
+
+   Beschleunigung der Rechengeschwindigkeit für die Berechnung der Zetafunktion
+   in :numref:`code-zeta-numba-parallel` als Funktion der Anzahl der Threads
+   auf einem Vierkernprozessor mit Hyperthreading.
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
