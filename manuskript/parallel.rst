@@ -611,14 +611,12 @@ abhängt, und zum anderen, dass die Kompilierung in der Tat für drei
 verschiedene Signaturen durchgeführt wurde.
 
 Mit Hilfe von Numba können wir zudem Funktionen leicht in universelle
-Funktionen, also *ufuncs* umwandeln, die wir in Abschnitt :ref:`ufuncs`
-im Zusammenhang mit NumPy eingeführt hatten. Universelle Funktionen sind
-in der Lage, neben skalaren Argumenten auch Arrays als Argumente zu
-verarbeiten. Numba erlaubt es zudem noch, die Funktionsauswertung für
-die Werte des Arrays in mehreren Threads parallel auszuführen. Alles
-was für die Umwandlung in eine universelle Funktion und die Verwendung
-mehrere Threads erforderlich ist, ist die Verwendung des Dekorators
-``vectorize``.
+Funktionen, also *ufuncs* umwandeln, die wir in Abschnitt :ref:`ufuncs` im
+Zusammenhang mit NumPy eingeführt hatten. Universelle Funktionen sind in der
+Lage, neben skalaren Argumenten auch Arrays als Argumente zu verarbeiten. Dies
+erlaubt bereits die Verwendung des Dekorators ``jit``. Mit Hilfe des Dekorators
+``vectorize`` kann zudem erreicht werden, dass die Funktionsauswertung für die
+Werte des Arrays in mehreren Threads parallel ausgeführt wird.
 
 Im folgenden Codebeispiel geben wir als Argumente für den Dekorator die Signatur
 an, die Numba verwenden soll. Das Argument ``x`` hat den Datentyp ``float64``
@@ -631,7 +629,6 @@ Parallelverarbeitung nicht gewünscht, zum Beispiel weil das Problem zu klein
 ist und das Starten eines Threads nur unnötig Zeit kosten würde, so kann man
 auch ``target='cpu'`` setzen. Hat man einen geeigneten Grafikprozessor, so
 kann dieser mit ``target='cuda'`` zur Rechnung herangezogen werden.
-
 
 .. sourcecode:: python
    :linenos:
@@ -669,6 +666,75 @@ dass dann Threads häufiger auf freie Ressourcen warten müssen.
    Beschleunigung der Rechengeschwindigkeit für die Berechnung der Zetafunktion
    in :numref:`code-zeta-numba-parallel` als Funktion der Anzahl der Threads
    auf einem Vierkernprozessor mit Hyperthreading.
+
+In Numba lassen sich universelle Funktionen mit Hilfe des Dekorators
+``guvectorize`` noch verallgemeinern, so dass in der inneren Schleife auch
+Arrays verwendet werden können. Bei den üblichen universellen Funktionen wird in
+der inneren Schleife dagegen mit Skalaren gearbeitet. Um dies an einem Beispiel
+zu verdeutlichen, kommen wir auf das Mandelbrotbeispiel zurück.
+
+.. sourcecode:: python
+   :linenos:
+
+   import time
+   
+   from numba import jit, guvectorize, complex128, int64
+   import matplotlib.pyplot as plt
+   import numpy as np
+   
+   @jit
+   def mandelbrot_iteration(c, maxiter):
+       z = 0
+       for n in range(maxiter):
+           z = z**2+c
+           if z.real*z.real+z.imag*z.imag > 4:
+               return n
+       return maxiter
+   
+   @guvectorize([(complex128[:], int64[:], int64[:])], '(n), () -> (n)',
+                target='parallel')
+   def mandelbrot(c, itermax, output):
+       nitermax = itermax[0]
+       for i in range(c.shape[0]):
+           output[i] = mandelbrot_iteration(c[i], nitermax)
+           
+   def mandelbrot_set(xmin, xmax, ymin, ymax, npts, nitermax):
+       cy, cx = np.ogrid[ymin:ymax:npts*1j, xmin:xmax:npts*1j]
+       c = cx+cy*1j
+       return mandelbrot(c, nitermax)
+   
+   def plot(data, xmin, xmax, ymin, ymax):
+       plt.imshow(data, extent=(xmin, xmax, ymin, ymax),
+                  cmap='jet', origin='bottom', interpolation='none')
+       plt.show()
+   
+   nitermax = 2000
+   npts = 1024
+   xmin = -2
+   xmax = 1
+   ymin = -1.5
+   ymax = 1.5
+   start = time.time()
+   data = mandelbrot_set(xmin, xmax, ymin, ymax, npts, nitermax)
+   ende = time.time()
+   print(ende-start)
+   plot(data, xmin, xmax, ymin, ymax)
+
+Unser besonderes Augenmerk richten wir hier auf die Funktion ``mandelbrot``, die mit dem
+``guvectorize``-Dekorator versehen ist und einige Besonderheiten aufweist. Die Funktion
+``mandelbrot`` besitzt drei Argumente, von denen hier zwei, nämlich ``c`` und ``itermax``,
+an die Funktion übergeben werden, während das dritte Argument, also ``output`` für die
+Rückgabe des Ergebnisses vorgesehen ist. Dies kann man dem zweiten Argument des Dekorators,
+dem sogenannten Layout, entnehmen. Diesem kann man entnehmen, dass das zurückgegebene Array
+``output`` die gleiche Form wie das Argument ``c`` besitzt. Da wir ein zweidimensionales
+Array ``c`` übergeben, ist das Argument ``c[i]`` der Funktion ``mandelbrot_iteration`` selbst
+wieder ein Array. Andererseits muss man bedenken, dass das Argument ``itermax`` ein Array
+ist, so dass hier zur Verwendung als Skalar das Element ``0`` herangezogen wird.
+
+Auf einem i7-3770-Prozessor, der durch Hyperthreading bis zu acht Threads unterstützt, wird
+dieses Programm in knapp 0,48 Sekunden ausgeführt. Wir erreichen somit eine
+Beschleunigung gegenüber unserem bisher schnellsten Code um fast eine
+Größenordnung.
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
