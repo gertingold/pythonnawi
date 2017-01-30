@@ -317,6 +317,9 @@ parallele Berechnung der Mandelbrotmenge benötigen.
 
 .. sourcecode:: python
    :linenos:
+   :name: code-mandelbrot_parallel
+   :caption: Wesentliche Teile eines Programms zur Berechnung der
+             Mandelbrotmenge unter Verwendung von parallelen Prozessen
  
    from concurrent import futures
    from itertools import product
@@ -734,10 +737,12 @@ Array ``c`` übergeben, ist das Argument ``c[i]`` der Funktion ``mandelbrot_iter
 wieder ein Array. Andererseits muss man bedenken, dass das Argument ``itermax`` ein Array
 ist, so dass hier zur Verwendung als Skalar das Element ``0`` herangezogen wird.
 
-Auf einem i7-3770-Prozessor, der durch Hyperthreading bis zu acht Threads unterstützt, wird
-dieses Programm in knapp 0,48 Sekunden ausgeführt. Wir erreichen somit eine
-Beschleunigung gegenüber unserem bisher schnellsten Code um fast eine
-Größenordnung.
+Auf einem i7-3770-Prozessor, der durch Hyperthreading bis zu acht Threads
+unterstützt, wird dieses Programm in knapp 0,48 Sekunden ausgeführt. Wir
+erreichen somit eine Beschleunigung gegenüber unserem bisher schnellsten
+:numref:`code-mandelbrot_parallel` um fast eine Größenordnung. Gegenüber unserer
+allerersten Version haben wird auf diesem Prozessortyp sogar eine Beschleunigung
+um mehr als einen Faktor 1000 erreicht.
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
