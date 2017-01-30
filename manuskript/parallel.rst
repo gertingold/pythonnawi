@@ -630,9 +630,12 @@ ist und das Starten eines Threads nur unnötig Zeit kosten würde, so kann man
 auch ``target='cpu'`` setzen. Hat man einen geeigneten Grafikprozessor, so
 kann dieser mit ``target='cuda'`` zur Rechnung herangezogen werden.
 
-.. sourcecode:: python
+.. code-block:: python
    :linenos:
    :name: code-zeta-numba-parallel
+   :caption: Die Erzeugung einer universellen Funktion mit Hilfe des
+             ``vectorize``-Dekorators von Numba wird am Beispiel der
+             Auswertung der Zetafunktion demonstriert.
 
    import time
    import numpy as np
@@ -664,7 +667,7 @@ dass dann Threads häufiger auf freie Ressourcen warten müssen.
    :height: 6cm
 
    Beschleunigung der Rechengeschwindigkeit für die Berechnung der Zetafunktion
-   in :numref:`code-zeta-numba-parallel` als Funktion der Anzahl der Threads
+   mit dem :numref:`code-zeta-numba-parallel` als Funktion der Anzahl der Threads
    auf einem Vierkernprozessor mit Hyperthreading.
 
 In Numba lassen sich universelle Funktionen mit Hilfe des Dekorators
