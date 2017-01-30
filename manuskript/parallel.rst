@@ -742,7 +742,7 @@ unterstützt, wird dieses Programm in knapp 0,48 Sekunden ausgeführt. Wir
 erreichen somit eine Beschleunigung gegenüber unserem bisher schnellsten
 :numref:`code-mandelbrot_parallel` um fast eine Größenordnung. Gegenüber unserer
 allerersten Version haben wird auf diesem Prozessortyp sogar eine Beschleunigung
-um mehr als einen Faktor 1000 erreicht.
+um einen Faktor 200 erreicht.
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
