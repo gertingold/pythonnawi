@@ -749,4 +749,4 @@ um mehr als einen Faktor 1000 erreicht.
         ist zum Beispiel das in Java geschriebene Jython.
 .. [#cython] Cython sollte nicht mit CPython verwechselt werden.
 .. [#numba-doc] Für weitere Informationen siehe die jeweils
-        `aktuelle Dokumentation <http://numba.pydata.org/doc.html>`.
+        `aktuelle Dokumentation <http://numba.pydata.org/doc.html>`_.
