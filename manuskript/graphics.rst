@@ -63,7 +63,7 @@ importiert werden:
       ...: import matplotlib as mpl
       ...: import matplotlib.pyplot as plt
       ...: %matplotlib
-   Using matplotlib backend: Qt4Agg
+   Using matplotlib backend: Qt5Agg
 
 In den meisten Fällen wird hierzu das NumPy-Modul gehören, das wir wie gewohnt
 unter der Abkürzung ``np`` in der ersten Zeile importieren. Für die Arbeit mit
@@ -100,7 +100,7 @@ Nun können wir leicht eine Grafik erzeugen, die die beiden Funktionen darstellt
 
 Führt man diese beiden Kommandos aus, so öffnet sich ein Fenster, das neben der
 Grafik auch einige Icons enthält, die es erlauben, die Darstellung zu
-modifizieren.
+modifizieren. [#matplotlib2]_
 
 .. image:: images/matplotlib/mpl1.png
    :height: 5cm
@@ -126,15 +126,16 @@ Die acht Icons haben von links nach rechts die folgenden Funktionen:
  * Dieses Icon erlaubt es, die Seitenverhältnisse der Abbildung und die
    Größe der Ränder zu verändern.
 
- * Dieses Icon dient dazu, die Grafik in einer Datei zu speichern, sei es
-   in einem Bitmap-Format wie zum Beispiel ``png`` oder in einem
-   Vektorgrafik-Format wie ``eps``, ``pdf`` oder ``svg``.
-
- * Das letzte Icon ist nicht bei jedem Backend vorhanden, wird aber bei dem hier
+ * Dieses Icon ist nicht bei jedem Backend vorhanden, wird aber bei dem hier
    verwendeten Qt-Backend angezeigt. Es erlaubt die Wahl des *x*- und
    *y*-Achsenabschnitts, das Setzen von Beschriftungen sowie die Wahl von
-   logarithmischen Achsen. Diese Funktionalität ist aber auch durch
+   logarithmischen Achsen. Je nach Art der Grafik lässt sich hier zum Beispiel
+   auch die Farbpalette einstellen. Diese Funktionalität ist aber auch durch
    entsprechende pyplot-Funktionen verfügbar, wie wir im Folgenden sehen werden.
+
+ * Das letzte Icon dient dazu, die Grafik in einer Datei zu speichern, sei es
+   in einem Bitmap-Format wie zum Beispiel ``png`` oder in einem
+   Vektorgrafik-Format wie ``eps``, ``pdf`` oder ``svg``.
 
 Bevor wir uns aber mit der Beschriftung der Grafik beschäftigen, wollen wir uns
 zunächst der Darstellung der Daten zuwenden. Standardmäßig werden die Daten mit
@@ -199,24 +200,23 @@ und erhalten folgende Ausgabe:
    :align: center
 
 In diesem Beispiel haben wir ausgenutzt, dass sich eine Reihe von Farben mit Hilfe
-eines Buchstabens auswählen lassen. Eine Liste dieser Farben lässt sich 
-folgendermaßen ausgeben:
+eines Buchstabens auswählen lassen, nämlich
 
 .. sourcecode:: ipython
 
-   In [8]: mpl.colors.ColorConverter.colors
-   Out[8]: {'y': (0.75, 0.75, 0),
-    'w': (1.0, 1.0, 1.0),
-    'g': (0.0, 0.5, 0.0),
-    'm': (0.75, 0, 0.75),
-    'r': (1.0, 0.0, 0.0),
-    'c': (0.0, 0.75, 0.75),
-    'k': (0.0, 0.0, 0.0),
-    'b': (0.0, 0.0, 1.0)}
+   In [8]: mpl.colors.BASE_COLORS
+   Out[8]: {'b': (0, 0, 1),
+            'c': (0, 0.75, 0.75),
+            'g': (0, 0.5, 0),
+            'k': (0, 0, 0),
+            'm': (0.75, 0, 0.75),
+            'r': (1, 0, 0),
+            'w': (1, 1, 1),
+            'y': (0.75, 0.75, 0)}
 
-Es stehen auf diese Weise also die Farben Gelb (``y``), Weiß (``w``), Grün
-(``g``), Magenta (``m``), Rot (``r``), Cyan (``c``), Schwarz (``k``) und Blau
-(``b``) zur Verfügung. Die aufgelisteten Tupel geben die RGB-Darstellung der
+Es stehen auf diese Weise also die Farben Blau (``b``), Cyan (``c``), Grün
+(``g``), Schwarz (``k``), Magenta (``m``), Rot (``r``), Weiß (``w``) und Gelb
+(``y``) zur Verfügung. Die aufgelisteten Tupel geben die RGB-Darstellung der
 jeweiligen Farben an, das heißt den Anteil der Farben Rot, Grün und Blau.
 Dieses ist direkt an den Farben Rot und Blau nachvollziehbar. Bei Grün ist die
 Helligkeit reduziert, da diese Farbe bei voller Helligkeit im Allgemeinen
@@ -231,11 +231,11 @@ kann.
 .. sourcecode:: ipython
 
    In [9]: mpl.colors.cnames
-   Out[9]: {'gold': '#FFD700', 'darkorchid': '#9932CC', 'silver': '#C0C0C0',
-   'aquamarine': '#7FFFD4', 'mediumseagreen': '#3CB371', 'gray': '#808080',
-   ...
-   'mediumspringgreen': '#00FA9A', 'darkturquoise': '#00CED1','darkblue': '#00008B',
-   'deeppink': '#FF1493', 'sage': '#87AE73', 'mediumorchid': '#BA55D3'}
+   Out[9]: {'aliceblue': '#F0F8FF', 'antiquewhite': '#FAEBD7', 'aqua': '#00FFFF',
+            'aquamarine': '#7FFFD4', 'azure': '#F0FFFF', 'beige': '#F5F5DC',
+            ...
+            'violet': '#EE82EE', 'wheat': '#F5DEB3', 'white': '#FFFFFF',
+            'whitesmoke': '#F5F5F5', 'yellow': '#FFFF00', 'yellowgreen': '#9ACD32'}
 
 Jeder Farbe ist wieder ein RGB-Wert zugeordnet, der in diesem Fall
 hexadezimal kodiert ist. Der RGB-Wert besteht hier aus drei zweistelligen
@@ -252,11 +252,11 @@ werden kann.
    :width: 16cm
    :align: center
 
-Als Beispiel ändern wir die Farbe der zweiten Linie auf ``darksalmon``
+Als Beispiel ändern wir die Farbe der zweiten Linie auf ``seagreen``
 
 .. sourcecode:: ipython
 
-   In [10]: plt.setp(line2, color='darksalmon')
+   In [10]: plt.setp(line2, color='seagreen')
 
 und erhalten damit die folgende Ausgabe
 
@@ -334,13 +334,13 @@ aus der folgenden Auflistung ergibt.
 .. sourcecode:: ipython
 
    In [15]: mpl.lines.Line2D.lineStyles
-   Out[15]: {'--': '_draw_dashed',
-    '-': '_draw_solid',
-    '': '_draw_nothing',
-    ' ': '_draw_nothing',
-    'None': '_draw_nothing',
-    '-.': '_draw_dash_dot',
-    ':': '_draw_dotted'}
+   Out[15]: {'': '_draw_nothing',
+             ' ': '_draw_nothing',
+             '-': '_draw_solid',
+             '--': '_draw_dashed',
+             '-.': '_draw_dash_dot',
+             ':': '_draw_dotted',
+             'None': '_draw_nothing'}
 
 Möchte man eine Linie gestrichelt darstellen, kann man wie bei den Farben
 die ``setp``-Methode verwenden und übergibt mit Hilfe des Schlüsselworts
@@ -359,7 +359,7 @@ festlegen.
 
 .. sourcecode:: ipython
 
-   In [17]: plt.setp(line2, dashes=(20, 10))
+   In [17]: plt.setp(line2, dashes=(6, 2))
 
 .. image:: images/matplotlib/mpl11.png
    :height: 5cm
@@ -368,7 +368,7 @@ festlegen.
 
 .. sourcecode:: ipython
 
-   In [18]: plt.setp(line2, dashes=(10, 20), dash_capstyle='round')
+   In [18]: plt.setp(line2, dashes=(4, 2), dash_capstyle='round')
 
 .. image:: images/matplotlib/mpl12.png
    :height: 5cm
@@ -462,9 +462,11 @@ Verfügung, die man sich als Dictionary ausgeben lassen kann.
 .. sourcecode:: ipython
 
    In [24]: mpl.lines.Line2D.markers
-   Out[24]: {'v': 'triangle_down', 0: 'tickleft', 2: 'tickup', 's': 'square',
-    ...
-    'h': 'hexagon1', '1': 'tri_down', 'p': 'pentagon', '2': 'tri_up'}
+   Out[24]: {'.': 'point', ',': 'pixel', 'o': 'circle', 'v': 'triangle_down',
+             ...
+             8: 'caretleftbase', 9: 'caretrightbase', 10: 'caretupbase',
+             11: 'caretdownbase', 'None': 'nothing', None: 'nothing',
+             ' ': 'nothing', '': 'nothing'}
 
 Das Dictionary ist hier nur auszugsweise wiedergegeben, da die folgende grafische
 Darstellung nützlicher ist. Zu beachten ist, dass zwar die meisten Symbole mit
@@ -546,9 +548,6 @@ vorhandenen TeX-Installation gesetzt wird.
    :height: 5cm
    :align: center
 
-Dadurch verbessert sich in unserem Beispiel unter anderem die Platzierung des
-Kommas deutlich.
-
 Gelegentlich ist es sinnvoll, eine Grafik mit einer Legende zu versehen, die
 die Bedeutung der einzelnen Kurven erläutert. Eine Möglichkeit, den
 Beschriftungstext vorzugeben, besteht darin, dies gleich bei der Erzeugung der
@@ -573,12 +572,11 @@ setzen.
    :height: 5cm
    :align: center
 
-Bei einer recht vollen Grafik, wie es hier der Fall ist, kann es sinnvoll
-sein, den Ort der Legende explizit vorzugeben.
+Man kann aber beispielsweise auch verlangen, dass die Legende rechts oben platziert wird.
 
 .. sourcecode:: ipython
 
-   In [32]: plt.legend(loc='lower left')
+   In [32]: plt.legend(loc='upper right')
    Out[32]: <matplotlib.legend.Legend at 0x7f48af946ba8>
 
 .. image:: images/matplotlib/mpl23.png
@@ -809,27 +807,26 @@ Reihe verschiedener Farbpaletten zur Verfügung, von denen einige auch gut
 für Konturplots geeignet sind. Eine Zusammenstellung der Farbpaletten aus der
 matplotlib-Galerie ist nachfolgend abgebildet.
 
-.. image:: images/matplotlib/cm_01.png
-   :height: 6.5cm
+.. image:: images/matplotlib/cm_012.png
+   :width: 12cm
    :align: center
 
-.. image:: images/matplotlib/cm_23.png
-   :height: 4.6cm
+.. image:: images/matplotlib/cm_345.png
+   :width: 12cm
    :align: center
 
-.. image:: images/matplotlib/colormaps_reference_04_hires.png
-   :height: 6.5cm
-   :align: center
-
-Im folgenden Beispiel wählen wir die Farbpalette ``hot`` und füllen mit Hilfe
-der Funktion ``contourf`` die Flächen zwischen den Konturlinien. Damit die
-Linien deutlicher sichtbar werden, werden sie in schwarz dargestellt.
+Im folgenden Beispiel wählen wir mit ``viridis`` eine der Farbpaletten, deren
+Helligkeit gleichmäßig variiert und damit auch in einer
+Schwarz-Weiß-Darstellung eine adäquate Darstellung der Farben liefert. Mit
+Hilfe der Funktion ``contourf`` füllen wir die Flächen zwischen den
+Konturlinien. Damit die Linien deutlicher sichtbar werden, werden sie in
+schwarz dargestellt.
 
 .. sourcecode:: ipython
 
    In [47]: plt.clf()
       ...: levels = 10
-      ...: contourset = plt.contourf(x, y, z, levels, cmap='hot')
+      ...: contourset = plt.contourf(x, y, z, levels, cmap='viridis')
       ...: plt.colorbar(contourset)
       ...: contourlines = plt.contour(x, y, z, levels, colors=('k',))
       ...: plt.clabel(contourlines, inline=1)
@@ -2283,6 +2280,8 @@ des Projekts.
    findet man auf der `matplotlib-Webseite <http://matplotlib.sourceforge.net/>`_.
 .. [#pyx] Die Programmbibliothek zum Herunterladen und weitere Informationen findet
    man auf der `PyX-Webseite <http://pyx.sourceforge.net/>`_.
+.. [#matplotlib2] Die Abbildungen sind mit Matplotlib 2.0 unter Verwendung des
+   Defaultstils erstellt worden.
 .. [#latex] Bei TeX und seiner Variante LaTeX handelt es sich um ein sehr mächtiges
    Textsatzsystem, das im wissenschaftlichen Umfeld stark genutzt wird. Für weitere
    Informationen siehe zum Beispiel `www.dante.de <http://www.dante.de/>`_.
