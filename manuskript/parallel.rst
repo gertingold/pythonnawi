@@ -203,9 +203,24 @@ und einen i5-4690::
 Es zeigen sich deutliche Unterschiede, wobei aber in beiden Fällen die
 Berechnung des Absolutbetrags der komplexen Variable ``z`` für einen
 wesentlichen Beitrag zur Rechenzeit verantwortlich ist. Besonders deutlich ist
-dies im ersten Fall, wo dieser Beitrag über 40 Prozent ausmacht. Bevor man zur
-Parallelisierung des Codes übergeht, bietet es sich an, erst die Ausgangsversion
-zu optimieren. Die Berechnung des Absolutbetrags lässt sich vermeiden, wenn man
+dies im ersten Fall, wo dieser Beitrag über 40 Prozent ausmacht. Allerdings ist
+bei der Interpretation dieses Ergebnisses etwas Vorsicht geboten, da die
+Berechnung des Absolutbetrags typischerweise lediglich einige zehn Nanosekunden
+benötigt, hier aber extrem oft aufgerufen wird. In einer solchen Situation
+verursacht ``cProfile`` einen erheblichen Zusatzaufwand, der sich in den obigen
+Daten niederschlägt und auch deutlich wird, wenn man die reine Rechenzeit als
+Differenz von End- und Startzeit bestimmt. Diese liegt für beide Prozessortypen
+bei etwas 85 Sekunden.
+
+Obwohl also die Berechnung des Absolutbetrags für die Rechenzeit nicht so
+relevant ist, wie es zunächst den Anschein hat, ist es für spätere
+Programmversionen sinnvoll, eine reelle Variante der Mandelbrot-Iteration zu
+implementieren. Damit verfolgen wir die Strategie, bereits vor der
+Parallelisierung des Programms den Code möglichst stark zu optimieren, um
+anschließend durch die Parallelisierung einen weitere Beschleunigung des
+Programms zu erzielen.
+
+Die Berechnung des Absolutbetrags lässt sich vermeiden, wenn man
 nicht mit einer komplexen Variable rechnet, sondern Real- und Imaginärteil
 separat behandelt, wie die folgende Version der Funktionen
 ``mandelbrot_iteration`` und ``mandelbrot`` zeigt.
@@ -248,8 +263,13 @@ Aber auch für den i5-4690-Prozessor ergibt sich eine Verkürzung der Rechenzeit
    1048576   85.981    0.000   85.981    0.000 m2.py:4(mandelbrot_iteration)
          1    0.330    0.330   86.312   86.312 m2.py:15(mandelbrot
 
-Man kann jedoch vermuten, dass sich die Rechenzeit noch weiter verkürzen
-lässt, wenn man NumPy verwendet. In diesem Fall ist eine separate Behandlung
+Tatsächlich wird diese Verkürzung vor allem durch die Verringerung des durch
+``cProfile`` bedingten Zusatzaufwands verursacht. Die tatsächliche Rechenzeit
+kann durch unsere Änderung sogar größer werden. Dennoch ist die Verwendung der
+reellen Variante in den folgenden Programmversionen günstiger.
+
+Man kann nun vermuten, dass sich die Rechenzeit mit Hilfe von NumPy
+verringern lässt. In diesem Fall ist eine separate Behandlung
 der Iteration nicht mehr sinnvoll, so dass wir statt der Funktionen
 ``mandelbrot_iteration`` und ``mandelbrot`` nur noch eine Funktion
 ``mandelbrot`` haben, die folgendermaßen aussieht.
@@ -284,9 +304,7 @@ und der i5-4690-Prozessor mit ::
         1   20.173   20.173   20.191   20.191 m3.py:4(mandelbrot)
 
 unterscheiden sich kaum noch in der benötigten Rechenzeit. Bereits ohne
-Parallelisierung haben wir die Rechenzeit für den i7-3770-Prozessor um
-einen Faktor 25 reduziert, für den i5-4690-Prozessor bei einer deutlich
-geringeren anfänglichen Rechenzeit immerhin fast um einen Faktor 6.
+Parallelisierung haben wir durch NumPy mindestens einen Faktor 4 gewonnen.
 
 Nun können wir daran gehen, die Berechnung dadurch weiter zu beschleunigen, dass
 wir die Aufgabe in mehrere Teilaufgaben aufteilen und verschiedenen Prozessen
@@ -409,6 +427,7 @@ die Mandelbrotmenge erreicht wird, wenn das zu behandelnde Gebiet in 64
 Teilgebiete unterteilt wird, also sowohl die reelle als auch die imaginäre
 Achse in acht Segmente unterteilt wird. Dann benötigt ein i7-3770-Prozessor
 noch etwa 4,4 Sekunden, während ein i5-4690-Prozessor 3 Sekunden benötigt.
+Damit ergibt sich eine Beschleunigung um einen Faktor von 20 bis 30.
 
 Interessant ist, wie die zeitliche Verteilung der Aufgaben auf die vier Prozesse
 erfolgt. Dies ist in :numref:`fig-parallel` für verschiedene Unterteilungen
@@ -742,7 +761,7 @@ unterstützt, wird dieses Programm in knapp 0,48 Sekunden ausgeführt. Wir
 erreichen somit eine Beschleunigung gegenüber unserem bisher schnellsten
 :numref:`code-mandelbrot_parallel` um fast eine Größenordnung. Gegenüber unserer
 allerersten Version haben wird auf diesem Prozessortyp sogar eine Beschleunigung
-um einen Faktor 200 erreicht.
+um einen Faktor von fast 200 erreicht.
 
 .. [#CPython] Wenn wir hier von Python sprechen, meinen wir immer die
         CPython-Implementation. Eine Implementation von Python ohne GIL
