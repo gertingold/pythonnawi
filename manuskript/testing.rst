@@ -32,7 +32,7 @@ Tests in einfacher Weise auszuführen.
 Beim Formulieren von Tests sollte man sich Gedanken darüber machen, was alles
 schief gehen könnte, um möglichst viele Problemfälle detektieren zu können. In
 diesem Prozess können sich schon Hinweise auf Möglichkeiten zur Verbesserung
-eines Programms ergeben. Im Rahmen des so genannten *test driven developments*
+eines Programms ergeben. Im Rahmen des so genannten *test-driven developments*
 geht man sogar so weit, zunächst die Tests zu formulieren und dann das zugehörige
 Programm zu schreiben. Allerdings sind gerade im naturwissenschaftlichen Bereich
 die Anforderungen zu Beginn nicht immer so klar zu definieren, dass dieses Verfahren
@@ -93,154 +93,365 @@ können, die zugleich die Verwendung des dokumentierten Objekts illustrieren.
 
 Während der Dokumentationsaspekt alleine durch die Anwesenheit des entsprechenden Textteils
 im Dokumentationsstring erfüllt wird, benötigen wir für den Test das ``doctest``-Modul.
-Die Vorgehensweise soll an dem folgenden Beispiel erläutert werden, das auf dem Quicksort-Code
-aus dem Abschnitt :ref:`listcomprehensions` basiert.
+Wir beginnen mit dem folgenden einfachen Beispiel.
+
+.. code-block:: python
+
+   def welcome(name):
+       """
+       be nice and greet somebody
+       name: name of the person
+   
+       """
+       return 'Hallo {}!'.format(name)
+
+Mit ``help(welcome)`` wird dann bekanntermaßen der Dokumentationsstring
+ausgegeben, also
+
+.. code-block:: ipython
+
+   In [1]: help(welcome)
+
+   Help on function welcome in module __main__:
+
+   welcome(name)
+       be nice and greet somebody
+       name: name of the person
+
+Wir erweitern nun den Dokumentationsstring um ein Anwendungsbeispiel, das
+einerseits dem Benutzer die Verwendung der Funktion illustriert und andererseits
+zu Testzwecken dienen kann.
 
 .. code-block:: python
    :linenos:
 
-   def quicksort(x):
-       """sortiere Liste x mit dem Quicksort-Verfahren
-   
-          Beispiele:
-          >>> quicksort([2, 5, 3, 7, -1])
-          [-1, 2, 3, 5, 7]
-          >>> quicksort([2.25, -1.5])
-          [-1.5, 2.25]
-   
-          Komplexe Zahlen lassen sich nicht sortieren
-          >>> quicksort([2j, 1-3j])
-          Traceback (most recent call last):
-              ...
-          TypeError: unorderable types: complex() < complex()
+   def welcome(name):
        """
-       if len(x)<2: return x
-       return (quicksort([y for y in x[1:] if y<x[0]])
-               +x[0:1]
-               +quicksort([y for y in x[1:] if x[0]<=y]))
+       be nice and greet somebody
+       name: name of the person
    
-   if __name__=="__main__":
+       >>> welcome('Guido')
+       'Hallo Guido!'
+   
+       """
+       return 'Hallo {}!'.format(name)
+   
+   if __name__ == "__main__":
        import doctest
        doctest.testmod()
 
-Unsere alte Funktionsdefinition wurde hier um einen Dokumentationsstring in den Zeilen 2-15
-erweitert. Die erste Zeile gibt eine kurze Beschreibung dessen, was die Funktion tut.
-Danach folgen einige Beispiele, deren Format dem entspricht, was man bei der interaktiven
-Arbeit in der Python-Shell vor sich hätte. Auf diese Weise hat man hier zwei
-Anwendungsbeispiele illustriert, die in der Python-Shell direkt nachvollzogen werden können.
-Das dritte Beispiel dient dazu, auf einen nicht zulässigen Aufruf hinzuweisen und den zugehörigen
-Grund kurz zu erläutern.
+Der im Beispiel verwendete Name ist eine Referenz an den Schöpfer von Python,
+Guido van Rossum. Das Anwendungsbeispiel in den Zeilen 6 und 7 verwendet die
+Formatierung der Python-Shell nicht nur, weil sich der Code auf diese Weise
+direkt nachvollziehen lässt, sondern weil das ``doctest``-Modul dieses Format
+erwartet. Gegebenenfalls sind auch mit ``...`` eingeleitete Fortsetzungszeilen
+erlaubt. Folgt nach der Ausgabe noch anderer Text, so muss dieser durch eine
+Leerzeile abgetrennt sein.
 
-Die Verwendung des Formats der Python-Shell besitzt jedoch nicht nur einen besonderen
-Wiedererkennungswert für den Betrachter, sondern auch für das ``doctest``-Modul, das
-genau hiernach in Dokumentationsstrings sucht. Unser Beispiel ist so aufgebaut, dass 
-es bei einem direkten Aufruf das ``doctest``-Modul lädt und mit dem Aufruf der ``testmod``-Methode
-die Dokumentationsstrings von Funktionen und Klassen nach Testdefinitionen durchsucht und
-diese ausführt. Führt man das Skript aus, so erhält man das folgende Ergebnis::
+Der Code in den letzten drei Zeilen unseres Beispiels führt dazu, dass die Ausführung
+des Skripts den in der Dokumentation enthaltenen Code testet::
 
-   $ python doctest_example.py
+   $ python example.py
    $
 
 Der Umstand, dass hier keine Ausgabe erzeugt wird, ist ein gutes Zeichen, denn
 er bedeutet, dass es bei der Durchführung der Tests keine Fehler gab. Das
 Auftreten eines Fehlers hätte dagegen zu einer entsprechenden Ausgabe geführt.
 Vielleicht will man aber wissen, ob und, wenn ja, welche Tests durchgeführt wurden.
-Hierzu verwendet man die Kommandozeilenoption ``-v`` für *verbose*::
+Hierzu verwendet man die Kommandozeilenoption ``-v`` für *verbose*, die hier
+nach dem Namen des Skripts stehen muss::
 
-   $ python doctest_example.py -v
+   gert@teide:[...]/manuskript: python example.py -v
    Trying:
-       quicksort([2, 5, 3, 7, -1])
+       welcome('Guido')
    Expecting:
-       [-1, 2, 3, 5, 7]
-   ok
-   Trying:
-       quicksort([2.25, -1.5])
-   Expecting:
-       [-1.5, 2.25]
-   ok
-   Trying:
-       quicksort([2j, 1-3j])
-   Expecting:
-       Traceback (most recent call last):
-           ...
-       TypeError: no ordering relation is defined for complex numbers
+       'Hallo Guido!'
    ok
    1 items had no tests:
        __main__
    1 items passed all tests:
-      3 tests in __main__.quicksort
-   3 tests in 2 items.
-   3 passed and 0 failed.
+      1 tests in __main__.welcome
+   1 tests in 2 items.
+   1 passed and 0 failed.
    Test passed.
 
-Der Ausgabe entnimmt man, dass in der Tat die erwarteten drei Tests durchgeführt wurden und
-zu dem erwarteten Ergebnis geführt haben. Will man diese ausführliche Ausgabe
-unabhängig von einer Kommandozeilenoption erzwingen, kann man beim Aufruf von ``testmod``
-die Variable ``verbose`` auf ``True`` setzen.
+Der Ausgabe entnimmt man, dass ein Test erfolgreich durchgeführt wurde und zu
+dem erwarteten Ergebnis geführt habt. Will man diese ausführliche Ausgabe
+unabhängig von einer Kommandozeilenoption erzwingen, kann man beim Aufruf von
+``testmod`` die Variable ``verbose`` auf ``True`` setzen.
 
-Alternativ zu der bisher beschriebenen Vorgehensweise könnte man die Zeilen 20-23 unseres
-Beispielcodes weglassen und das ``doctest``-Modul beim Aufruf des Skripts laden. Will man
-eine ausführliche Ausgabe erhalten, so hätte der Aufruf die folgende Form::
+Alternativ zu der bisher beschriebenen Vorgehensweise könnte man die letzten
+drei Zeilen unseres Beispielcodes weglassen und das ``doctest``-Modul beim
+Aufruf des Skripts laden. Will man eine ausführliche Ausgabe erhalten, so hätte
+der Aufruf die folgende Form::
 
-   $ python -m doctest -v doctest_example.py
+   $ python -m doctest -v example.py
 
-Die Einfachheit, mit der Tests in Dokumentationsstring eingebaut und damit
-zugleich auch an andere Nutzer weitergegeben werden können, sollte dazu
-ermutigen, sich dieses Verfahrens zu bedienen. Allerdings gibt es bereits in
-unserem einfachen Beispiel gewisse Punkte, die zu beachten sind. Der erste der
-drei Tests ist unproblematisch, aber bereits beim zweiten Test ergibt sich aus
-dem Umstand, dass hier Gleitkommazahlen auftreten, ein potentielles Problem.
-Aufgrund von Rundungsfehlern kann es nämlich unter Umständen sein, dass die
-Darstellung der entsprechenden Zahlen in der Ein- und Ausgabe voneinander
-abweichen und dass dieser Unterschied von der konkreten Rechnerumgebung
-abhängt. In diesem Falle würde der Test fehlschlagen. Daher wurden die
-Gleitkommazahlen in unserem Beispiel so gewählt, dass die Binärdarstellung nur
-wenige Nachkommastellen besitzt, so dass Rundungsfehler ausgeschlossen werden
-können.
+Den Fehlerfall illustriert ein Beispiel, in dem eine englischsprachige Ausgabe
+erwartet wird
 
-Der dritte Test im obigen Beispiel bezieht sich auf eine Eingabe, die keine
-Sortierung zulässt und somit zu einer ``TypeError``-Ausnahme führt. Die
-tatsächliche Ausgabe ist in diesem Fall etwas ausführlicher, wobei die Details
-jedoch irrelevant sind. Daher sind in Zeile 13 im Dokumentationsstring drei
-Auslassungspunkte, auf Englisch *ellipsis* zu finden, die als Platzhalter für
-beliebigen Inhalt fungieren. Man könnte nun auf die Idee kommen, die
-Beschreibung nach dem Doppelpunkt in Zeile 14 ebenfalls durch drei Punkte zu
-ersetzen. Dies würde jedoch nicht zum Erfolg führen. In diesem Fall müsste man
-am Ende von Zeile 11 noch einen Kommentar anfügen, der die Auslassungspunkte
-explizit zulässt.
+.. code-block:: python
+
+   def welcome(name):
+       """
+       be nice and greet somebody
+       name: name of the person
+   
+       >>> welcome('Guido')
+       'Hello Guido!'
+   
+       """
+       return 'Hallo {}!'.format(name)
+
+und das zu folgendem Resultat führt::
+
+   $ python -m doctest example.py
+   **********************************************************************
+   File "example.py", line 6, in example.welcome
+   Failed example:
+       welcome('Guido')
+   Expected:
+       'Hello Guido!'
+   Got:
+       'Hallo Guido!'
+   **********************************************************************
+   1 items had failures:
+      1 of   1 in example.welcome
+   ***Test Failed*** 1 failures.
+
+Bei Fehlern werden die Details auch ohne die Option ``-v`` ausgegeben.
+
+Im Rahmen des *test-driven developments* könnte man als eine Art Wunschliste
+noch weitere Tests einbauen. Zum Beispiel soll auch ohne Angabe eines Namens
+eine sinnvolle Ausgabe erfolgen, und es soll auch eine Ausgabe in anderen
+Sprachen möglich sein.
+
+.. code-block:: python
+
+   def welcome(name):
+       """
+       be nice and greet somebody
+       name: name of the person
+   
+       >>> welcome()
+       'Hello!'
+   
+       >>> welcome(lang='de')
+       'Hallo!'
+   
+       >>> welcome('Guido')
+       'Hello Guido!'
+   
+       """
+       return 'Hallo {}!'.format(name)
+
+Die im Dokumentationsstring formulierten Anforderungen führen natürlich
+zunächst zu Fehlern::
+
+   $ python -m doctest example.py
+   **********************************************************************
+   File "example.py", line 6, in example.welcome
+   Failed example:
+       welcome()
+   Exception raised:
+       Traceback (most recent call last):
+         File "/opt/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+           compileflags, 1), test.globs)
+         File "<doctest example.welcome[0]>", line 1, in <module>
+           welcome()
+       TypeError: welcome() missing 1 required positional argument: 'name'
+   **********************************************************************
+   File "example.py", line 9, in example.welcome
+   Failed example:
+       welcome(lang='de')
+   Exception raised:
+       Traceback (most recent call last):
+         File "/opt/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+           compileflags, 1), test.globs)
+         File "<doctest example.welcome[1]>", line 1, in <module>
+           welcome(lang='de')
+       TypeError: welcome() got an unexpected keyword argument 'lang'
+   **********************************************************************
+   File "example.py", line 12, in example.welcome
+   Failed example:
+       welcome('Guido')
+   Expected:
+       'Hello Guido!'
+   Got:
+       'Hallo Guido!'
+   **********************************************************************
+   1 items had failures:
+      3 of   3 in example.welcome
+   ***Test Failed*** 3 failures.
+
+Der Code muss nun so lange angepasst werden, bis alle Tests korrekt durchlaufen,
+wie dies für das folgende Skript der Fall ist.
+
+.. code-block:: python
+
+   def welcome(name='', lang='en'):
+       """
+       be nice and greet somebody
+       name: name of the person, may be empty
+       lang: two character language code
+   
+       >>> welcome()
+       'Hello!'
+   
+       >>> welcome(lang='de')
+       'Hallo!'
+   
+       >>> welcome('Guido')
+       'Hello Guido!'
+   
+       """
+       greetings = {'de': 'Hallo',
+                    'en': 'Hello',
+                    'fr': 'Bonjour'}
+       try:
+           greeting = greetings[lang]
+       except KeyError:
+           errmsg = 'unknown language: {}'.format(lang)
+           raise ValueError(errmsg)
+       if name:
+           greeting = ' '.join([greeting, name])
+       return greeting+'!'
+
+Da dieser Code zu einer ``ValueError``-Ausnahme führt, wenn eine nicht implementierte
+Sprache angefordert wird, stellt sich die Frage, wie dieses Verhalten getestet werden
+kann. Das Problem besteht hier darin, dass die Ausgabe recht komplex sein kann. Der
+Aufruf ``welcome('Guido', lang='nl')`` führt zu::
+
+   Traceback (most recent call last):
+     File "example.py", line 21, in welcome
+       greeting = greetings[lang]
+   KeyError: 'nl'
+   
+   During handling of the above exception, another exception occurred:
+   
+   Traceback (most recent call last):
+     File "example.py", line 29, in <module>
+       welcome('Guido', lang='nl')
+     File "example.py", line 24, in welcome
+       raise ValueError(errmsg)
+   ValueError: unknown language: nl
+
+Für den Test im Dokumentationsstring müssen allerdings nur die erste Zeile, die die
+Ausnahme ankündigt, sowie die letzte Zeile, die die Ausnahme spezifiziert, angegeben 
+werden, wie dies die Zeilen 16-18 im folgenden Code zeigen.
+
+.. code-block:: python
+   :linenos:
+
+   def welcome(name='', lang='en'):
+       """
+       be nice and greet somebody
+       name: name of the person, may be empty
+       lang: two character language code
+   
+       >>> welcome()
+       'Hello!'
+   
+       >>> welcome(lang='de')
+       'Hallo!'
+   
+       >>> welcome('Guido')
+       'Hello Guido!'
+   
+       >>> welcome('Guido', 'nl')
+       Traceback (most recent call last):
+       ValueError: unknown language: nl
+   
+       """
+       greetings = {'de': 'Hallo',
+                    'en': 'Hello',
+                    'fr': 'Bonjour'}
+       try:
+           greeting = greetings[lang]
+       except KeyError:
+           errmsg = 'unknown language: {}'.format(lang)
+           raise ValueError(errmsg)
+       if name:
+           greeting = ' '.join([greeting, name])
+       return greeting+'!'
+
+In diesem Zusammenhang ist auch eine der Direktiven nützlich, die das
+``doctest``-Modul bereitstellt. Gibt man die Direktive ``+ELLIPSIS`` an, so
+kann ``...`` beliebigen Text in der betreffenden Zeile ersetzen. Wenn uns also
+die Fehlermeldung nicht genauer interessiert, können wir folgenden Test
+verwenden:
 
 .. code-block:: python
 
    """
-      >>> quicksort([2j, 1-3j]) # doctest: +ELLIPSIS
+   >>> welcome('Guido', 'nl')  # doctest: +ELLIPSIS
+   Traceback (most recent call last):
+   ValueError: ...
+
    """
 
-Für eine detailliertere Diskussion der verschiedenen Optionen und Direktiven im
-``doctest``-Modul verweisen wir auf die zugehörige 
-`Dokumentation <http://docs.python.org/2/library/doctest.html>`_.
+Tests, die nicht oder vorläufig nicht durchgeführt werden sollen, kann man mit
+der ``+SKIP``-Direktive wie folgt markieren:
 
-|weiterfuehrend| Das ``doctest``-Modul kann auch eingesetzt werden, um Python-Code
-zu testen, der in Textdokumente eingebettet ist, die unter Verwendung von
-`reStructuredText <http://docutils.sourceforge.net/rst.html>`_ erstellt wurden.
-Letzeres ist unter anderem bei diesem Vorlesungsskript der Fall.
+.. code-block:: python
+
+   """
+   >>> welcome('Guido', 'nl')  # doctest: +SKIP
+   'Goedendag Guido!'
+
+   """
+
+Weitere Direktiven, wie das gelegentlich nützliche ``+NORMALIZE_WHITESPACE``,
+sind in der `Dokumentation <https://docs.python.org/3/library/doctest.html>`_
+des ``doctest``-Moduls zu finden.
+
+Interessant ist, dass diese Art der Tests nicht nur in Dokumentationsstrings
+verwendet werden kann, sondern in beliebigen Texten. So lässt sich der Code
+in dem Text ::
+
+   Eine einfache Verzweigung in Python:
+   >>> x = 1
+   >>> if x < 0:
+   ...    print('x ist negativ')
+   ... else:
+   ...    print('x ist nicht negativ')
+   x ist nicht negativ
+   
+   Am Ende des Tests muss sich eine
+   Leerzeile befinden.
+
+leicht testen::
+
+   $ python -m doctest -v example.txt
+   Trying:
+       x = 1
+   Expecting nothing
+   ok
+   Trying:
+       if x < 0:
+          print('x ist negativ')
+       else:
+          print('x ist nicht negativ')
+   Expecting:
+       x ist nicht negativ
+   ok
+   1 items passed all tests:
+      2 tests in example.txt
+   2 tests in 1 items.
+   2 passed and 0 failed.
+   Test passed.
+
+*Doctests* sind für einfachere Testsituationen sehr nützlich, da sie leicht zu
+schreiben sind und gleichzeitig die Dokumentation von Code unterstützen.
+Allerdings sind sie für komplexere Testszenarien, insbesondere im numerischen
+Bereich, weniger gut geeignet. Dann greift man eher auf *unit tests* zurück, die
+im folgenden Abschnitt beschrieben werden.
 
 .. _unittest:
 
 ----------------------
 Das ``unittest``-Modul
 ----------------------
-
-Für umfangreichere Testszenarien sind die Möglichkeiten, die das
-``doctest``-Modul bietet, meistens nicht ausreichend. So hatten wir im vorigen
-Abschnitt bereits gesehen, dass Tests mit Gleitkommazahlen Schwierigkeiten
-bereiten können. Auch ist es nicht unbedingt sinnvoll, einen
-Dokumentationsstring mit einer zu großen Zahl an Tests zu versehen. Ferner kann
-man sich Testszenarien vorstellen, die eine Vorbereitung und Abschlussarbeiten
-erfordern. In solchen Fällen bietet es sich an, die Möglichkeiten zu nutzen,
-die das ``unittest``-Modul bietet. Wie schon im vorigen Abschnitt werden wir
-uns auf die wesentlichen Aspekte konzentrieren und verweisen für Details auf
-die `Dokumentation <http://docs.python.org/2/library/unittest.html>`_ des
-``unittest``-Moduls.
 
 Wir beginnen mit einem Beispiel, das die ``quicksort``-Funktion aus dem vorigen
 Abschnitt testet. Dazu nehmen wir an, dass die Funktion in einem Skript ``myquicksort.py``
