@@ -70,15 +70,24 @@ gelöscht wurden.
 Zu diesem Zeitpunkt ist es sinnvoll, Git auch den vollständigen Namen des
 Benutzers und eine zugehörige E-Mail-Adresse mitzuteilen::
 
-   $ git config user.name "Gert-Ludwig Ingold"
-   $ git config user.email "gert.ingold@physik.uni-augsburg.de"
+   $ git config --global user.name "Gert-Ludwig Ingold"
+   $ git config --global user.email "gert.ingold@physik.uni-augsburg.de"
 
 Diese Informationen legt Git im Hauptverzeichnis des Benutzers in der Datei
 ``.gitconfig`` ab und verwendet sie bei der Übernahme von Dateien in das
-Versionsarchiv. Bei Bedarf lassen sich noch weitere Parameter einstellen,
-beispielsweise der Editor, den Git aufrufen soll, um dem Benutzer beim
-Abspeichern einer neuen Version die Möglichkeit zu geben, einen Kommentar
-abzuspeichern.
+Versionsarchiv. Lässt man die Option ``--global`` weg, so wird die Information
+im lokalen Git-Verzeichnis abgelegt und gilt auch nur dort.
+
+Bei Bedarf lassen sich noch weitere Parameter einstellen, beispielsweise der
+Editor, den Git aufrufen soll, um dem Benutzer beim Abspeichern einer neuen
+Version die Möglichkeit zu geben, einen Kommentar abzuspeichern. Da es immer
+wieder vorkommt, dass defaultmäßig ein Editor verwendet wird, mit dessen
+Bedienung man nicht vertraut ist, empfiehlt es sich, die gewünschte Einstellung
+vorzunehmen, zum Beispiel ::
+
+   $ git config --global core.editor vim
+
+wenn man den Editor ``vim`` benutzen möchte.
 
 Um das Arbeiten mit Git zu illustrieren, legen wir anschließend eine erste
 Version eines Skripts ``hello.py`` mit folgendem Inhalt
