@@ -453,200 +453,252 @@ im folgenden Abschnitt beschrieben werden.
 Das ``unittest``-Modul
 ----------------------
 
-Wir beginnen mit einem Beispiel, das die ``quicksort``-Funktion aus dem vorigen
-Abschnitt testet. Dazu nehmen wir an, dass die Funktion in einem Skript ``myquicksort.py``
-definiert sei. Der folgende Code befinde sich in einem Skript ``test_quicksort.py``.
-Dieses Namenswahl ist sinnvoll, da Testskripten standardmäßig in Dateien gesucht
-werden, deren Namen mit ``test`` beginnt. Wir definieren die folgenden vier Tests:
+Beim Erstellen von Tests stellt sich zum einen die Frage nach der technischen
+Umsetzung, zum anderen aber auch danach, was ein Test sinnvollerweise überprüft.
+Da *unit tests* potentiell komplexer sein können als *doctests* rückt die zweite
+Frage hier etwas stärker in den Vordergrund. Wir wollen beide Aspekte, den
+technischen und den konzeptionellen, am Beispiel eines Programms zur Berechnung
+von Zeilen eines pascalschen Dreiecks diskutieren. Das Skript ``pascal.py``
 
 .. code-block:: python
+   :linenos:
 
-   from myquicksort import quicksort
-   from unittest import TestCase
+   def pascal_line(n):
+       x = 1
+       yield x
+       for k in range(n):
+           x = x*(n-k)//(k+1)
+           yield x
    
-   class testQuicksort(TestCase):
-       def test_sort_integers(self):
-           """test sorting of integers
-   
-           """
-           list_unsorted = [7, 2, 3, 1]
-           list_sorted = [1, 2, 3, 7]
-           self.assertEqual(quicksort(list_unsorted),
-                            list_sorted)
-   
-       def test_equal_elements(self):
-           """test whether equal elements are lost
-   
-           """
-           list_unsorted = [2, 3, 4, -1, 3]
-           self.assertEqual(len(quicksort(list_unsorted)),
-                            len(list_unsorted))
-   
-       def test_sort_floats(self):
-           """test sorting of floats
-   
-           """
-           list_unsorted = [2.13, 3.12, 2.14, 2.12]
-           list_sorted = [2.12, 2.13, 2.14, 3.12]
-           self.assertEqual(quicksort(list_unsorted),
-                            list_sorted)
-   
-       def test_sort_complex(self):
-           """test sorting failure for complex numbers
-   
-           """
-           with self.assertRaises(TypeError):
-               quicksort([3.5+1j, 2+3.5j])
+   if __name__ == '__main__':
+       for n in range(7):
+           line = ' '.join(map(lambda x: '{:2}'.format(x), pascal_line(n)))
+           print(str(n)+line.center(25))
+           
+erzeugt mit Hilfe der Zeilen 8-11 die Ausgabe ::
 
-Vier Tests sind hier als Methoden einer Unterklasse der Klasse ``unittest.TestCase``
-definiert und werden bei der Ausführung des Testskripts automatisch abgearbeitet.
-Jeder Test soll nach Möglichkeit einen unabhängigen Aspekt des zu testenden Skripts
-überprüfen. So überprüft zum Beispiel der zweite Test, dass bei der Sortierung
-keine Elemente verloren gehen. Die Überprüfung der Testbedingung erfolgt jeweils
-mit ``assert``-Anweisungen, von denen das ``unittest``-Modul eine ganze Reihe
-für die verschiedensten Zwecke bereitstellt. 
+   0             1
+   1           1  1          
+   2          1  2  1        
+   3        1  3  3  1       
+   4       1  4  6  4  1     
+   5     1  5 10 10  5  1    
+   6    1  6 15 20 15  6  1 
 
-Lässt man die Tests laufen, so erhält man die folgende Ausgabe::
+wobei jede Zeile durch einen Aufruf der Funktion ``pascal_line`` bestimmt wird.
+Getestet werden soll nur diese in den ersten sechs Zeilen definierte Funktion.
 
-   $ python -m unittest discover
-   ....
+Ein offensichtlicher Weg, die Funktion zu testen, besteht darin, ausgewählte Zeilen des
+pascalschen Dreiecks zu berechnen und mit dem bekannten Ergebnis zu vergleichen.
+Hierzu erstellt man ein Testskript, das wir ``test_pascal.py`` nennen wollen:
+
+.. code-block:: python
+   :linenos:
+
+   from unittest import main, TestCase
+   from pascal import pascal_line
+   
+   class TestExplicit(TestCase):
+       def test_n0(self):
+           self.assertEqual(list(pascal_line(0)), [1])
+   
+       def test_n1(self):
+           self.assertEqual(list(pascal_line(1)), [1, 1])
+   
+       def test_n5(self):
+           self.assertEqual(list(pascal_line(5)), [1, 5, 10, 10, 5, 1])
+   
+   if __name__ == '__main__':
+       main()
+
+Da dieses Testskript zunächst unabhängig von dem zu testenden Skript ist, muss die
+zu testende Funktion in Zeile 2 importiert werden. Die verschiedenen Testfälle sind
+als Methoden einer von ``unittest.TestCase`` abgleiteten Klasse implementiert. Dabei
+ist die wichtig, dass der Name der Methoden mit ``test`` beginnen, um sie von eventuell
+vorhandenen anderen Methoden zu unterscheiden. Wie wir später noch sehen werden, können
+mehrere Testklassen, wie hier ``TestExplicit`` implementiert werden, um auf diese Weise
+eine Gliederung der Testfälle zu erreichen. Der eigentliche Test erfolgt hier mit einer
+Variante der ``assert``-Anweisung, die das ``unittest``-Modul zur Verfügung stellt.
+Dabei wird hier auf Gleichheit der beiden Argumente getestet. Wir werden später noch
+sehen, dass auch andere Test möglich sind.
+
+Die Ausführung der Tests wird durch die letzten beiden Zeilen des Testskripts
+veranlasst. Man erhält als Resultat::
+
+   $ python test_pascal.py
+   ...
    ----------------------------------------------------------------------
-   Ran 4 tests in 0.000s
+   Ran 3 tests in 0.000s
    
    OK
 
-Bei diesem Aufruf wird das ``unittest``-Modul geladen und mit dem 
-Schlüsselwort ``discover`` aufgefordert, selbst nach Testskripten
-zu suchen. Es findet unsere Datei ``test_quicksort.py`` und führt
-die vier darin enthaltenen Test aus. Alternativ hätte man statt
-``discover`` auch einfach den Namen der Testdatei ohne Endung angeben
-können, also::
+Offenbar sind alle drei Tests erfolgreich durchgeführt worden. Dies wird unter anderem auch
+durch die drei Punkte in der zweiten Zeile angezeigt.
 
-   $ python -m unittest test_quicksort
+Um einen Fehlerfall zu illustrieren, bauen wir nun einen Fehler ein, und zwar der Einfachheit
+halber in das Testskript. Üblicherweise wird sich der Fehler zwar im zu testenden Skript befinden,
+aber das spielt hier keine Rolle. Das Testskript mit der fehlerhaften Zeile 12
 
-Die Ausgabe zeigt die erfolgreiche Ausführung jedes Tests jeweils durch einen
-Punkt in der zweiten Zeile an. Das abschließende ``OK`` weist nochmals darauf
-hin, dass kein Fehler aufgetreten ist.
+.. code-block:: python
+   :linenos:
 
-Zu Illustration bauen wir nun in unsere ``quicksort``-Funktion einen Fehler ein.
+   from unittest import main, TestCase
+   from pascal import pascal_line
+   
+   class TestExplicit(TestCase):
+       def test_n0(self):
+           self.assertEqual(list(pascal_line(0)), [1])
+   
+       def test_n1(self):
+           self.assertEqual(list(pascal_line(1)), [1, 1])
+   
+       def test_n5(self):
+           self.assertEqual(list(pascal_line(5)), [1, 4, 6, 4, 1])
+   
+   if __name__ == '__main__':
+       main()
+
+liefert nun die Ausgabe::
+
+   $ python test_pascal.py
+   ..F
+   ======================================================================
+   FAIL: test_n5 (__main__.TestExplicit)
+   ----------------------------------------------------------------------
+   Traceback (most recent call last):
+     File "test_pascal.py", line 12, in test_n5
+       self.assertEqual(list(pascal_line(5)), [1, 4, 6, 4, 1])
+   AssertionError: Lists differ: [1, 5, 10, 10, 5, 1] != [1, 4, 6, 4, 1]
+   
+   First differing element 1:
+   5
+   4
+   
+   First list contains 1 additional elements.
+   First extra element 5:
+   1
+   
+   - [1, 5, 10, 10, 5, 1]
+   + [1, 4, 6, 4, 1]
+   
+   ----------------------------------------------------------------------
+   Ran 3 tests in 0.003s
+   
+   FAILED (failures=1)
+
+Einer der drei Tests schlägt erwartungsgemäß fehl, wobei genau beschrieben wird,
+wo der Fehler aufgetreten ist und wie er sich manifestiert hat. In der zweiten Zeile
+deutet das ``F`` auf einen fehlgeschlagenen Test hin. Wenn erwartet wird, dass ein
+Test fehlschlägt, kann man ihn mit einem ``@expectedFailure``-Dekorator versehen. Dann
+würde die Ausgabe folgendermaßen aussehen::
+
+   $ python test_pascal.py 
+   ..x
+   ----------------------------------------------------------------------
+   Ran 3 tests in 0.003s
+   
+   OK (expected failures=1)
+
+Wenn wir die Testmethode ``test_n5`` wieder korrigieren, würden wir stattdessen ::
+
+   gert@teide:[...]/manuskript: python test_pascal.py 
+   ..u
+   ----------------------------------------------------------------------
+   Ran 3 tests in 0.000s
+   
+   FAILED (unexpected successes=1)
+
+erhalten.
+
+Während das Testen auf die beschriebene Weise noch praktikabel ist, ändert sich das für
+große Argumente. Das Testen für größere Argumente sollte man vor allem dann in Betracht
+ziehen, wenn man solche Argumente in der Praxis verwenden möchte, da es dort eventuell
+zu unerwarteten Problemen kommen kann. 
+
+Als Alternative zur Verwendung des expliziten Resultats bietet es sich an
+auszunutzen, dass die Summe aller Einträge einer Zeile im pascalschen Dreieck
+gleich :math:`2^n` ist, während die alternierende Summe verschwindet. Diese
+beiden Tests haben die Eigenschaft, dass sie unabhängig von dem verwendeten
+Algorithmus sind und somit etwaige Fehler, zum Beispiel durch eine fehlerhafte
+Verwendung der Integerdivision, aufdecken. Der zusätzliche Code in unserem
+Testskript könnte folgendermaßen aussehen:
 
 .. code-block:: python
 
-   def quicksort(x):
-       if len(x)<2: return x
-       return (quicksort([y for y in x[1:] if y<x[0]])
-               +x[0:1]
-               +quicksort([y for y in x[1:] if x[0]<y]))
+   class TestSums(TestCase):
+       def test_sum(self):
+           for n in (10, 100, 1000, 10000):
+               self.assertEqual(sum(pascal_line(n)), 2**n)
+   
+       def test_alternate_sum(self):
+           for n in (10, 100, 1000, 10000):
+               self.assertEqual(sum(alternate(pascal_line(n))), 0)
+   
+   def alternate(g):
+       sign = 1
+       for elem in g:
+           yield sign*elem
+           sign = -sign
 
-In der letzten Zeile lassen wir fälschlicherweise nur ``y``-Werte zu, die größer
-als ``x[0]`` sind. Die Ausführung der Tests resultiert in folgender Ausgabe::
+Dabei haben wir einen Generator definiert, der wechselnde Vorzeichen erzeugt. Auf
+diese Weise lässt sich der eigentlich Testcode kompakt und übersichtlich halten.
 
-   F...
-   ======================================================================
-   FAIL: test_equal_elements (test_quicksort.testQuicksort)
-   test whether equal elements are lost
-   ----------------------------------------------------------------------
-   Traceback (most recent call last):
-     File "test_quicksort.py", line 20, in test_equal_elements
-       len(list_unsorted))
-   AssertionError: 4 != 5
+Eine weitere Möglichkeit für einen guten Test besteht darin, das Konstruktionsverfahren
+einer Zeile aus der vorhergehenden Zeile im pascalschen Dreieck zu implementieren. Dies
+leistet der folgende zusätzliche Code:
 
-   ----------------------------------------------------------------------
-   Ran 4 tests in 0.001s
+.. code-block:: python 
 
-   FAILED (failures=1)
+   from itertools import chain
+   
+   class TestAdjacent(TestCase):
+       def test_generate_next_line(self):
+           for n in (10, 100, 1000, 10000):
+               expected = [a+b for a, b
+                           in zip(chain(zero(), pascal_line(n)),
+                                  chain(pascal_line(n), zero()))]
+               result = list(pascal_line(n+1))
+               self.assertEqual(result, expected)
+   
+   def zero():
+       yield 0
 
-Die erste Zeile gibt an, dass vier Tests ausgeführt wurden, wobei jedoch nur drei davon,
-die mit Punkten dargestellt sind, erfolgreich waren. Ein Test schlug fehl und ist daher
-mit einem ``F`` gekennzeichnet. Details zu diesem Test sind im Hauptteil der Ausgabe
-zu finden. Ganz am Ende wird nochmals darauf hingewiesen, dass ein Test fehlschlug.
+Hier wird die ``chain``-Funktion aus dem ``itertools``-Modul verwendet, um die Ausgabe
+zweier Generatoren aneinanderzufügen.
 
-In diesem Fall kann es auch hilfreich sein, die Möglichkeit zu nutzen, eine zusätzliche
-Nachricht auszugeben. Wir modifizieren dazu den zweiten Test.
+Bei den *doctests* hatten wir gesehen, dass es sinnvoll sein kann zu überprüfen, ob eine
+Ausnahme ausgelöst wird. In unserem Beispiel sollte dies geschehen, wenn das Argument
+der Funktion ``pascal_line`` eine negative ganze Zahl ist, da dann der verwendete 
+Algorithmus versagt. Die notwendige Ergänzung ist in dem folgenden Codestück gezeigt.
 
 .. code-block:: python
+   :linenos:
 
-   def test_equal_elements(self):
-       """test whether equal elements are lost
+   def pascal_line(n):
+       if n < 0:
+           raise ValueError('n may not be negative')
+       x = 1
+       yield x
+       for k in range(n):
+           x = x*(n-k)//(k+1)
+           yield x
 
-       """
-       list_unsorted = [2, 3, 4, -1, 3]
-       list_sorted = quicksort(list_unsorted)
-       self.assertEqual(len(list_sorted), len(list_unsorted),
-                        msg="\n  ursprüngliche Liste: {}".format(list_unsorted) +
-                            "\n  sortierte Liste:     {}".format(list_sorted))
-
-Damit erhalten wir die folgende Fehlerausgabe::
-
-   F...
-   ======================================================================
-   FAIL: test_equal_elements (test_quicksort.testQuicksort)
-   test whether equal elements are lost
-   ----------------------------------------------------------------------
-   Traceback (most recent call last):
-     File "test_quicksort.py", line 22, in test_equal_elements
-       "\n  sortierte Liste:     {}".format(list_sorted))
-   AssertionError: 4 != 5 : 
-     ursprüngliche Liste: [2, 3, 4, -1, 3]
-     sortierte Liste:     [-1, 2, 3, 4]
-
-   ----------------------------------------------------------------------
-   Ran 4 tests in 0.001s
-
-   FAILED (failures=1)
-
-
-Damit wird deutlich, dass die beiden Listen in der Tat ungleich lang sind, weil  
-ein doppelt vorkommendes Element nicht mehrfach einsortiert wurde.
-
-Beim Test von Gleitkommazahlen auf Gleichheit oder Ungleichheit ist wegen der Möglichkeit
-von Rundungsfehlern immer Vorsicht angebracht. Von numerischen Funktionen
-wird man zudem normalerweise nicht verlangen können, dass das Ergebnis bis zur
-letzten Stelle korrekt ist. Das ``unittest``-Modul stellt aus diesem Grunde die
-``assertAlmostEqual``- und ``assertNotAlmostEqual``-Anweisungen zur Verfügung. Dabei
-wird standardmäßig die Differenz zwischen den beiden Vergleichswerten auf sieben
-Nachkommastellen gerundet und mit Null verglichen. Bei Bedarf kann die Zahl der
-gerundeten Stellen oder eine maximale bzw. minimale Differenz zwischen den Vergleichswerten
-vorgegeben werden.
-
-Das folgende Beispiel illustriert das Vorgehen bei Tests für Gleitkommazahlen.
+Der zugehörige Test könnte folgendermaßen aussehen:
 
 .. code-block:: python
+   :linenos:
 
-   from unittest import TestCase
-   
-   def square(x):
-       return x*x
-   
-   class testNumeric(TestCase):
-       def test_equal(self):
-           xsquare = square(1.3)
-           x2 = 1.69
-           self.assertEqual(xsquare, x2)
-   
-       def test_almost_equal(self):
-           xsquare = square(1.3)
-           x2 = 1.69
-           self.assertAlmostEqual(xsquare, x2)
+   class TestParameters(TestCase):
+       def test_negative_int(self):
+           with self.assertRaises(ValueError):
+               next(pascal_line(-1))
 
-Dabei ergibt sich die folgende Ausgabe::
+Die Verwendung von ``assertRaises`` muss nicht zwingend in einem ``with``-Kontext erfolgen,
+macht den Code aber sehr übersichtlich. Da die Ausnahme erst dann ausgelöst wird, wenn
+ein Wert von dem Generator angefordert wurde, ist in der letzten Zeile die Verwendung
+von ``next`` erforderlich.
 
-   .F
-   ======================================================================
-   FAIL: test_equal (test_square.testNumeric)
-   ----------------------------------------------------------------------
-   Traceback (most recent call last):
-     File "test_square.py", line 10, in test_equal
-       self.assertEqual(xsquare, x2)
-   AssertionError: 1.6900000000000002 != 1.69
-
-   ----------------------------------------------------------------------
-   Ran 2 tests in 0.000s
-
-   FAILED (failures=1)
-
-Tatsächlich schlägt der Test auf Gleichheit wegen des Auftretens von Rundungsfehlern
-fehl, während der Vergleich auf sieben Stellen erfolgreich ist.
+TODO: Erweiterung auf Floats
 
 Gelegentlich kommt es vor, dass ein Test eine Vorbereitung sowie Nacharbeit erfordert.
 Dies ist zum Beispiel beim Umgang mit Datenbanken der Fall, wo Tests nicht an Originaldaten
