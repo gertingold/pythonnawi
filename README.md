@@ -1,7 +1,7 @@
 ## pythonnawi
 # Materialien zur Vorlesung „Python für Naturwissenschaftler“
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/gertingold/pythonnawi)
+[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org:/repo/gertingold/pythonnawi) click and go to directory <code>notebooks</code>
 
 Die Vorlesung „Python für Naturwissenschaftler“ baut auf der Vorlesung „Einführung in das Programmieren für Physiker und Naturwissenschaftler“ auf und diskutiert einige fortgeschrittenere Aspekte von Python sowie die Verwendung von NumPy und die Erzeugung von Grafiken mit Hilfe von matplotlib und PyX. Darüber hinaus wird auch auf das Versionskontrollsystem Git und auf das Testen und die Laufzeitanalyse von Programmen eingegangen. Das Manuskript is online und im PDF-Format unter [gertingold.github.io](http://gertingold.github.io) verfügbar.
 
