@@ -698,13 +698,146 @@ macht den Code aber sehr übersichtlich. Da die Ausnahme erst dann ausgelöst wi
 ein Wert von dem Generator angefordert wurde, ist in der letzten Zeile die Verwendung
 von ``next`` erforderlich.
 
-TODO: Erweiterung auf Floats
+Bisher hatten wir es weder bei *doctests* noch bei *unit tests* mit
+Gleitkommazahlen zu tun, die jedoch beim numerischen Arbeiten häufig vorkommen
+und eine besondere Schwierigkeit beim Testen mit sich bringen. Um dies zu
+illustrieren, lassen wir in unserer Funktion ``pascal_line`` auch
+Gleitkommazahlen als Argument zu. So lassen sich zum Beispiel mit
+``pascal_line(1/3)`` die Taylorkoeffizienten von
 
-Gelegentlich kommt es vor, dass ein Test eine Vorbereitung sowie Nacharbeit erfordert.
-Dies ist zum Beispiel beim Umgang mit Datenbanken der Fall, wo Tests nicht an Originaldaten
-durchgeführt werden. Stattdessen müssen zunächst Datentabellen für den Test angelegt
-und am Ende wieder entfernt werden. In dem folgenden Beispiel schreiben wir Daten in
-eine temporäre Datei und überprüfen damit eine Funktion zum Einlesen dieser Daten.
+.. math::
+
+   \sqrt[3]{1+x} = 1+\frac{1}{3}x-\frac{1}{9}x^2+\frac{5}{81}x^3+\dots
+
+bestimmen. Ist das Argument keine nichtnegative ganze Zahl, so wird der
+Generator potentiell unendlich viele Werte erzeugen. Die angepasste Version
+unserer Funktion sieht folgendermaßen aus:
+
+.. code-block:: python
+
+   def pascal_line(n):
+       x = 1
+       yield x
+       k = 0
+       while n-k != 0:
+           x = x*(n-k)/(k+1)
+           k = k+1
+           yield x
+
+Die Koeffizienten der obigen Taylorreihe erhalten wir dann mit
+
+.. code-block:: python
+
+   p = pascal_line(1/3)
+   for n in range(4):
+       print(n, next(p))
+
+zu ::
+
+   0 1
+   1 0.3333333333333333
+   2 -0.11111111111111112
+   3 0.0617283950617284
+
+Wir erweitern unsere Tests entsprechend:
+
+.. code-block:: python
+
+   class TestParameters(TestCase):
+       @skip('only for integer version')
+       def test_negative_int(self):
+           with self.assertRaises(ValueError):
+               next(pascal_line(-1))
+   
+   class TestFractional(TestCase):
+       def test_one_third(self):
+           p = pascal_line(1/3)
+           result = [next(p) for _ in range(4)]
+           expected = [1, 1/3, -1/9, 5/81]
+           self.assertEqual(result, expected)
+
+Der erste Block zeigt beispielhaft, wie man eine Testfunktion mit Hilfe des
+``@skip``-Dekorators markieren kann, so dass diese nicht ausgeführt wird. Dazu
+muss allerdings nicht ``skip`` aus dem ``unittest``-Modul importiert werden.
+Auch die Testfunktionen ``test_sum``, ``test_alternate_sum`` und
+``test_generate_next_line`` sollten für die Gleitkommaversion auf diese Weise
+deaktiviert werden, da sie nicht mehr korrekt funktionieren, zum Beispiel weil
+ein Überlauf auftritt. Als Testergebnis erhält man dann::
+
+   s...Fsss
+   ======================================================================
+   FAIL: test_one_third (__main__.TestFractional)
+   ----------------------------------------------------------------------
+   Traceback (most recent call last):
+     File "test_pascal.py", line 47, in test_one_third
+       self.assertEqual(result, expected)
+   AssertionError: Lists differ: [1, 0.3333333333333333, -0.11111111111111112, 0.0617283950617284] != [1, 0.3333333333333333, -0.1111111111111111, 0.06172839506172839]
+   
+   First differing element 2:
+   -0.11111111111111112
+   -0.1111111111111111
+   
+   - [1, 0.3333333333333333, -0.11111111111111112, 0.0617283950617284]
+   ?                                            -                   ^
+   
+   + [1, 0.3333333333333333, -0.1111111111111111, 0.06172839506172839]
+   ?                                                               ^^
+   
+   
+   ----------------------------------------------------------------------
+   Ran 8 tests in 0.004s
+   
+   FAILED (failures=1, skipped=4)
+
+Neben den vier nicht ausgeführten Tests, die wir mit dem ``@skip``-Dekorator versehen hatten,
+wird hier noch ein fehlgeschlagener Test aufgeführt, bei dem es sich um unseren neuen Test
+der Gleitkommaversion handelt. Der Vergleich des erhaltenen und des erwarteten Resultats zeigt,
+dass die Ursache in Rundungsfehlern liegt. 
+
+Es gibt verschiedene Möglichkeiten, mit solchen Rundungsfehlern umzugehen. Das ``unittest``-Modul
+bietet die Methode ``assertAlmostEqual`` an, die allerdings den Nachteil hat, nicht auf Listen
+anwendbar zu sein. Außerdem lässt sich dort nur die Zahl der Dezimalstellen angeben, die bei der
+Rundung zu berücksichtigen sind. Standardmäßig sind dies 7 Stellen. Eine mögliche Lösung wäre also:
+
+.. code-block:: python
+
+   class TestFractional(TestCase):
+       def test_one_third(self):
+           p = pascal_line(1/3)
+           result = [next(p) for _ in range(4)]
+           expected = [1, 1/3, -1/9, 5/81]
+           for r, e in zip(result, expected):
+               self.assertAlmostEqual(r, e)
+
+Seit Python 3.5 gibt es auch die Möglichkeit, die Funktion ``isclose`` aus dem ``math``-Modul
+zu verwenden, die es erlaubt, den absoluten und relativen Fehler mit ``abs_tol`` bzw. ``rel_tol``
+bequem zu spezifizieren. Standardmäßig ist der absolute Fehler auf Null under relative Fehler
+auf :math:`10^{-9}` gesetzt. Der Test könnte dann folgendermaßen aussehen:
+
+.. code-block:: python
+
+   class TestFractional(TestCase):
+       def test_one_third(self):
+           p = pascal_line(1/3)
+           result = [next(p) for _ in range(4)]
+           expected = [1, 1/3, -1/9, 5/81]
+           for r, e in zip(result, expected):
+               self.assertTrue(math.isclose(r, e, rel_tol=1e-10))
+
+Auch in diesem Fall muss man alle Elemente explizit durchgehen, was den Testcode unnötig
+kompliziert macht. Abhilfe kann hier NumPy mit seinem ``testing``-Modul schaffen, auf das
+wir im nächsten Kapitel eingehen werden.
+
+Zuvor wollen wir aber noch kurz eine Testsituation ansprechen, bei der der
+eigentliche Test eine Vorbereitung sowie Nacharbeit erfordert. Dies ist zum
+Beispiel beim Umgang mit Datenbanken der Fall, wo Tests nicht an Originaldaten
+durchgeführt werden. Stattdessen müssen zunächst Datentabellen für den Test
+angelegt und am Ende wieder entfernt werden.
+
+In dem folgenden Beispiel soll eine Funktion zum Einlesen von Gleitkommazahlen
+getestet werden. Dazu müssen wir zunächst eine temporäre Datei erzeugen, die
+dann im Test eingelesen werden kann. Am Ende soll die temporäre Datei gelöscht
+werden.
 
 .. code-block:: python
 
@@ -750,66 +883,9 @@ Zunächst werden die beiden zum Einlesen verwendeten Funktionen definiert, wobei
 dem Test heraus die Funktion ``read_floats`` aufgerufen wird. In der Testklasse gibt
 es neben der Methode ``test_read_floats``, die die Korrektheit des Einlesens überprüft,
 noch zwei weitere Methoden. Die Methode ``setUp`` bereitet den Test vor. In unserem
-Beispiel wird dort eine temporäre Datei erzeugt, von der im Laufe des Tests Daten gelesen
+Beispiel wird dort die temporäre Datei erzeugt, von der im Laufe des Tests Daten gelesen
 werden. Die Methode ``tearDown`` wird nach dem Test ausgeführt und dient hier dazu, die
 temporäre Datei wieder zu entfernen.
-
-Insbesondere wenn man Tests schreibt, bevor die entsprechende Funktionalität implementiert
-ist, kann es sein, dass Tests fehlschlagen, ohne dass dies als Problem gewertet werden
-muss. In diesem Fall kann man mit Hilfe von Dekoratoren dafür sorgen, dass der betreffende
-Test nicht durchgeführt wird (``skip``) oder einen Hinweis auf den erwarteten Fehler
-erhält (``expectedFailure``).  Das folgende Beispiel illustriert den zweiten Fall.
-
-.. code-block:: python
-
-   from unittest import expectedFailure, TestCase
-   
-   def square(x):
-       """fehlerhafte Implementierung
-   
-       """
-       return 0.5*x*x
-   
-   def cube(x):
-       """noch nicht implementiert
-   
-       """
-       pass
-   
-   class testNumeric(TestCase):
-       def test_square(self):
-           xsquare = square(1.3)
-           x2 = 1.69
-           self.assertAlmostEqual(xsquare, x2)
-   
-       @expectedFailure
-       def test_cube(self):
-           xcube = cube(1.3)
-           x3 = 2.197
-           self.assertAlmostEqual(xcube, x3)
-
-Von den beiden Funktionen ``square`` und ``cube`` ist die erste fehlerhaft implementiert
-und die zweite ist bis jetzt noch überhaupt nicht implementiert. Daher ist zu erwarten,
-dass der zweite Test fehlschlagen wird. Er ist entsprechend mit dem ``expectedFailure``-Dekorator
-versehen. Lässt man den Test laufen, so erhält man die folgende Ausgabe::
-
-   xF
-   ======================================================================
-   FAIL: test_square (square.testNumeric)
-   ----------------------------------------------------------------------
-   Traceback (most recent call last):
-     File "test_powers.py", line 19, in test_square
-       self.assertAlmostEqual(xsquare, x2)
-   AssertionError: 0.8450000000000001 != 1.69 within 7 places
-   
-   ----------------------------------------------------------------------
-   Ran 2 tests in 0.001s
-   
-   FAILED (failures=1, expected failures=1)
-
-Hier wird also zwischen dem echten Fehler, der in ``test_square`` entdeckt wird, und dem
-erwarteten Fehler in ``test_cube`` unterschieden. Letzterer ist in der ersten Zeile mit
-einem ``x`` statt einem ``F`` markiert.
 
 Auch ohne dass wir alle Möglichkeiten des ``unittest``-Moduls besprochen haben,
 dürfte klar geworden sein, dass diese deutlich über die Möglichkeiten des
