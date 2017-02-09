@@ -462,6 +462,8 @@ von Zeilen eines pascalschen Dreiecks diskutieren. Das Skript ``pascal.py``
 
 .. code-block:: python
    :linenos:
+   :name: code-pascal_int
+   :caption: Code zur Berechnung von Zeilen eines pascalschen Dreiecks.
 
    def pascal_line(n):
        x = 1
@@ -714,6 +716,9 @@ Generator potentiell unendlich viele Werte erzeugen. Die angepasste Version
 unserer Funktion sieht folgendermaßen aus:
 
 .. code-block:: python
+   :name: code-pascal_float
+   :caption: Erweiterung der Funktion aus :numref:`code-pascal_int` für
+      das pascalsche Dreieck auf Gleitkommaargumente.
 
    def pascal_line(n):
        x = 1
@@ -903,9 +908,7 @@ Das Programmieren von Tests ist gerade beim numerischen Arbeiten sehr wichtig.
 Bei der Verwendung von NumPy-Arrays ergibt sich allerdings das Problem, dass
 man normalerweise nicht für jedes Arrayelement einzeln die Gültigkeit einer
 Testbedingung überprüfen möchte. Wir wollen daher kurz diskutieren, welche
-Möglichkeiten man in einem solchen Fall besitzt. Da es in erster Linie auf die
-``assert``-Anweisung ankommt, können wir hier darauf verzichten, ganze
-Testfälle zu programmieren.
+Möglichkeiten man in einem solchen Fall besitzt.
 
 Die im folgenden Beispiel definierte Matrix hat nur positive Eigenwerte:
 
@@ -926,7 +929,7 @@ Die im folgenden Beispiel definierte Matrix hat nur positive Eigenwerte:
    In [5]: LA.eigvalsh(a)
    Out[5]: array([ 2.97774394,  3.81381575,  5.20844031])
 
-   In [6]: np.all(LA.eigvalsh(a)>0)
+   In [6]: np.all(LA.eigvalsh(a) > 0)
    Out[6]: True
 
 Dies lässt sich in Ausgabe 5 direkt verifizieren. Für einen automatisierten
@@ -939,30 +942,32 @@ Wir hatten im letzten Kapitel darauf hingewiesen, dass man bei Tests von Floats
 die Möglichkeit von Rundungsfehlern bedenken muss. Dies gilt natürlich genauso,
 wenn man ganze Arrays von Floats erzeugt und testen will. In diesem Fall ist es
 sinnvoll, auf die Unterstützung zurückzugreifen, die NumPy durch sein
-``testing``-Modul [#numpytest]_ gibt. Wir demonstrieren dies an einem kleinen
-Beispiel, das die Berechnung des Sinus für einige Argumente testet.
+``testing``-Modul [#numpytest]_ gibt.
+
+Als Beispiel betrachten wir unseren auf Gleitkommaargumente verallgemeinerten
+Code für das pascalsche Dreieck (:numref:`code-pascal_float`). Da wir dort
+gleich mehrere Werte vergleichen müssen, können wir wie folgt vorgehen:
 
 .. code-block:: ipython
 
-   In [7]: import math
+   class TestFractional(TestCase):
+       def test_one_third(self):
+           p = pascal_line(1/3)
+           result = [next(p) for _ in range(4)]
+           expected = [1, 1/3, -1/9, 5/81]
+           np.testing.assert_allclose(result, expected, rtol=1e-10)
 
-   In [8]: a = np.linspace(0, math.pi, 5)
-
-   In [9]: a
-   Out[9]: array([ 0.        ,  0.78539816,  1.57079633,  2.35619449,  3.14159265])
-
-   In [10]: result = np.sin(a)
-
-   In [11]: correct = np.array([0, math.sqrt(0.5), 1, math.sqrt(0.5), 0])
-
-   In [12]: np.testing.assert_array_almost_equal(result, correct, 7)
-
-In Eingabe 10 wird das zu testende Resultat berechnet, während Eingabe 11 die auf
-den analytischen Ausdrücken basierende Erwartung an das Ergebnis bestimmt. Mit
-der ``assert_array_almost_equal``-Funktion erfolgt dann in Eingabe 12 der Vergleich.
-Dabei haben wir die Genauigkeitsanforderung auf 7 Dezimalstellen festgelegt. Die
-Tatsache, dass es zu keiner ``AssertionError``-Ausnahme kommt, bedeutet, dass 
-alle Arrayelemente im Rahmen der geforderten Genauigkeit übereinstimmen.
+Hierbei haben wir wie üblich NumPy als ``np`` importiert. Die Funktion
+``assert_allclose`` erlaubt es ähnlich wie ``math.isclose``, bequem den
+absoluten und relativen Fehler zu spezifizieren, wobei die entsprechenden
+Variablen hier ``atol`` bzw. ``rtol`` lauten. Dabei wird der Unterschied
+zwischen dem tatsächlichen und dem erwarteten Ergebnis mit der Summe aus
+``atol`` und dem mit ``rtol`` multiplizierten erwarteten Ergebnis verglichen.
+Defaultmäßig ist ``atol`` auf Null gesetzt, so dass nur der relative Fehler
+von Bedeutung ist, der defaultmäßig den Wert :math:`10^{-7}` hat. Gegenüber
+unseren früheren Tests der verallgemeinerten Funktion ``pascal_line`` hat
+der obige Test den Vorteil, dass nicht explizit über die Liste iteriert werden
+muss und der Testcode somit einfacher und übersichtlicher ist.
 
 .. [#coverage] Zur Überprüfung der Codeabdeckung durch Tests kann ``coverage.py``
    dienen, dessen Dokumentation unter `<http://coverage.readthedocs.io>`_ zu finden ist.
