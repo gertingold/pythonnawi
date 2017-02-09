@@ -513,16 +513,17 @@ Hierzu erstellt man ein Testskript, das wir ``test_pascal.py`` nennen wollen:
    if __name__ == '__main__':
        main()
 
-Da dieses Testskript zunächst unabhängig von dem zu testenden Skript ist, muss die
-zu testende Funktion in Zeile 2 importiert werden. Die verschiedenen Testfälle sind
-als Methoden einer von ``unittest.TestCase`` abgleiteten Klasse implementiert. Dabei
-ist die wichtig, dass der Name der Methoden mit ``test`` beginnen, um sie von eventuell
-vorhandenen anderen Methoden zu unterscheiden. Wie wir später noch sehen werden, können
-mehrere Testklassen, wie hier ``TestExplicit`` implementiert werden, um auf diese Weise
-eine Gliederung der Testfälle zu erreichen. Der eigentliche Test erfolgt hier mit einer
-Variante der ``assert``-Anweisung, die das ``unittest``-Modul zur Verfügung stellt.
-Dabei wird hier auf Gleichheit der beiden Argumente getestet. Wir werden später noch
-sehen, dass auch andere Test möglich sind.
+Da dieses Testskript zunächst unabhängig von dem zu testenden Skript ist, muss
+die zu testende Funktion in Zeile 2 importiert werden. Die verschiedenen
+Testfälle sind als Methoden einer von ``unittest.TestCase`` abgleiteten Klasse
+implementiert. Dabei ist wichtig, dass der Name der Methoden mit ``test``
+beginnen, um sie von eventuell vorhandenen anderen Methoden zu unterscheiden.
+Wie wir später noch sehen werden, können mehrere Testklassen, wie hier
+``TestExplicit``, implementiert werden, um auf diese Weise eine Gliederung der
+Testfälle zu erreichen. Der eigentliche Test erfolgt in diesem Fall mit einer
+Variante der ``assert``-Anweisung, die das ``unittest``-Modul zur Verfügung
+stellt. Dabei wird auf Gleichheit der beiden Argumente getestet. Wir
+werden später noch sehen, dass auch andere Test möglich sind.
 
 Die Ausführung der Tests wird durch die letzten beiden Zeilen des Testskripts
 veranlasst. Man erhält als Resultat::
@@ -643,7 +644,7 @@ Testskript könnte folgendermaßen aussehen:
            sign = -sign
 
 Dabei haben wir einen Generator definiert, der wechselnde Vorzeichen erzeugt. Auf
-diese Weise lässt sich der eigentlich Testcode kompakt und übersichtlich halten.
+diese Weise lässt sich der eigentliche Testcode kompakt und übersichtlich halten.
 
 Eine weitere Möglichkeit für einen guten Test besteht darin, das Konstruktionsverfahren
 einer Zeile aus der vorhergehenden Zeile im pascalschen Dreieck zu implementieren. Dies
@@ -763,7 +764,7 @@ Wir erweitern unsere Tests entsprechend:
 
 Der erste Block zeigt beispielhaft, wie man eine Testfunktion mit Hilfe des
 ``@skip``-Dekorators markieren kann, so dass diese nicht ausgeführt wird. Dazu
-muss allerdings nicht ``skip`` aus dem ``unittest``-Modul importiert werden.
+muss allerdings zunächst ``skip`` aus dem ``unittest``-Modul importiert werden.
 Auch die Testfunktionen ``test_sum``, ``test_alternate_sum`` und
 ``test_generate_next_line`` sollten für die Gleitkommaversion auf diese Weise
 deaktiviert werden, da sie nicht mehr korrekt funktionieren, zum Beispiel weil
@@ -816,7 +817,7 @@ Rundung zu berücksichtigen sind. Standardmäßig sind dies 7 Stellen. Eine mög
 
 Seit Python 3.5 gibt es auch die Möglichkeit, die Funktion ``isclose`` aus dem ``math``-Modul
 zu verwenden, die es erlaubt, den absoluten und relativen Fehler mit ``abs_tol`` bzw. ``rel_tol``
-bequem zu spezifizieren. Standardmäßig ist der absolute Fehler auf Null under relative Fehler
+bequem zu spezifizieren. Standardmäßig ist der absolute Fehler auf Null und der relative Fehler
 auf :math:`10^{-9}` gesetzt. Der Test könnte dann folgendermaßen aussehen:
 
 .. code-block:: python
@@ -831,7 +832,7 @@ auf :math:`10^{-9}` gesetzt. Der Test könnte dann folgendermaßen aussehen:
 
 Auch in diesem Fall muss man alle Elemente explizit durchgehen, was den Testcode unnötig
 kompliziert macht. Abhilfe kann hier NumPy mit seinem ``testing``-Modul schaffen, auf das
-wir im nächsten Kapitel eingehen werden.
+wir im nächsten Abschnitt eingehen werden.
 
 Zuvor wollen wir aber noch kurz eine Testsituation ansprechen, bei der der
 eigentliche Test eine Vorbereitung sowie Nacharbeit erfordert. Dies ist zum
@@ -938,11 +939,11 @@ und zu überprüfen, ob sie für alle Elemente erfüllt ist. Dies geschieht in
 Eingabe 6 mit Hilfe der ``all``-Funktion, die man in einem Test in der
 ``assert``-Anweisung verwenden würde.
 
-Wir hatten im letzten Kapitel darauf hingewiesen, dass man bei Tests von Floats
-die Möglichkeit von Rundungsfehlern bedenken muss. Dies gilt natürlich genauso,
-wenn man ganze Arrays von Floats erzeugt und testen will. In diesem Fall ist es
-sinnvoll, auf die Unterstützung zurückzugreifen, die NumPy durch sein
-``testing``-Modul [#numpytest]_ gibt.
+Im letzten Abschnitt hatten wir darauf hingewiesen, dass man bei Tests von
+Gleitkommazahlen die Möglichkeit von Rundungsfehlern bedenken muss. Dies gilt
+natürlich genauso, wenn man ganze Arrays von Gleitkommazahlen erzeugt und testen
+will. In diesem Fall ist es sinnvoll, auf die Unterstützung zurückzugreifen, die
+NumPy durch sein ``testing``-Modul [#numpytest]_ gibt.
 
 Als Beispiel betrachten wir unseren auf Gleitkommaargumente verallgemeinerten
 Code für das pascalsche Dreieck (:numref:`code-pascal_float`). Da wir dort
