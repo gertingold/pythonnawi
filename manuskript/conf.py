@@ -49,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Python für Naturwissenschaftler'
-copyright = u'2012-2016, Gert-Ludwig Ingold'
+copyright = u'2012-2017, Gert-Ludwig Ingold, Lizenz: CC BY 4.0 International'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
