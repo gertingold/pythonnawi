@@ -110,7 +110,20 @@ eines Objekts deutlich. Hält man sich an diese Konvention, so trägt man zur Ve
 des Codes bei.
 
 Um die Eigenschaften von Arrays zu untersuchen, müssen wir zunächst wissen, wie sich ein
-Array erzeugen lässt. In NumPy ist es sehr einfach, die Dokumentation nach einem bestimmten
+Array erzeugen lässt. Nachdem wir im vorigen Unterkapitel die Verwendung von
+Listen für die Darstellung von Matrizen diskutiert haben, mag man versucht sein,
+zu diesem Zweck die ``append``-Methode von NumPy zu verwenden. Hiervon ist
+allerdings abzuraten, da bei jeder Ausführung von ``append`` eine Kopie des
+NumPy-Arrays erstellt wird. Vor allem bei großen Arrays kann bereits das Anlegen
+einer Kopie im Speicher sehr zeitaufwendig sein, und dies gilt ganz besonders,
+wenn dieser Kopiervorgang häufig durchgeführt werden muss. Bei der Arbeit mit
+NumPy-Arrays wird mal also nach Möglichkeit immer darauf achten, dass keine
+unnötigen Kopien von Arrays angelegt werden. Für die Erzeugung von NumPy-Arrays
+bedeutet dies, dass man am besten die Größe bereits zu Beginn festlegt und dann aus den
+vielen zur Verfügung stehenden Methoden eine geeignete auswählt, um das Array
+mit Werten zu füllen.
+
+In NumPy ist es sehr einfach, die Dokumentation nach einem bestimmten
 Text zu durchsuchen. Die zahlreichen Möglichkeiten, ein Array zu erzeugen, lassen sich
 folgendermaßen erhalten:
 
@@ -164,11 +177,12 @@ Nachdem die Daten strukturlos im Speicher abgelegt sind, müssen
 ``ndarray``-Objekte, wie schon erwähnt, neben den Daten auch Informationen
 darüber besitzen, wie auf einzelne Matrixelemente zugegriffen wird. Auf diese
 Weise lässt sich sehr leicht die Adresse der Daten eines Matrixelements
-bestimmen. Zudem ist es möglich, die gleichen Daten im Speicher auf
-verschiedene Weise anzusehen. Damit ist es häufig möglich, unnötige
-Kopiervorgänge im Speicher zu vermeiden. Andererseits ist es aus diesem Grunde
-wichtig zu wissen, ob NumPy im Einzelfall nur eine andere Sicht auf die Daten
-zur Verfügung stellt oder tatsächlich ein neues Array erzeugt.
+bestimmen. Zudem ist es möglich, die gleichen Daten im Speicher auf verschiedene
+Weise anzusehen. Damit ist es häufig möglich, unnötige Kopiervorgänge im
+Speicher zu vermeiden. Wie weiter oben schon angedeutet ist dies von großer
+Bedeutung für die Effizienz des Programms. Aus diesem Grunde ist es wichtig zu
+wissen, ob NumPy im Einzelfall nur eine andere Sicht auf die Daten zur Verfügung
+stellt oder tatsächlich ein neues Array erzeugt.
 
 Um die Informationen über die Struktur eines Arrays besser zu verstehen,
 definieren wir uns eine Funktion, die einige Attribute des Arrays ausgibt.
