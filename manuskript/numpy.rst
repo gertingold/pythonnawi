@@ -117,7 +117,7 @@ allerdings abzuraten, da bei jeder Ausführung von ``append`` eine Kopie des
 NumPy-Arrays erstellt wird. Vor allem bei großen Arrays kann bereits das Anlegen
 einer Kopie im Speicher sehr zeitaufwendig sein, und dies gilt ganz besonders,
 wenn dieser Kopiervorgang häufig durchgeführt werden muss. Bei der Arbeit mit
-NumPy-Arrays wird mal also nach Möglichkeit immer darauf achten, dass keine
+NumPy-Arrays wird man also nach Möglichkeit immer darauf achten, dass keine
 unnötigen Kopien von Arrays angelegt werden. Für die Erzeugung von NumPy-Arrays
 bedeutet dies, dass man am besten die Größe bereits zu Beginn festlegt und dann aus den
 vielen zur Verfügung stehenden Methoden eine geeignete auswählt, um das Array
