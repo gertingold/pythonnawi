@@ -318,7 +318,7 @@ Um eine parallele Bearbeitung der Mandelbrotmenge zu ermöglichen, teilen wir de
 gesamten Wertebereich der zu betrachtenden komplexen Zahlen :math:`c` in eine
 Anzahl von Kacheln auf, die von den einzelnen Prozessen bearbeitet werden. 
 :numref:`fig-mandelbrot_tiles` zeigt, wie 16 Kacheln von vier Prozessen abgearbeitet wurden,
-wobei jeder Prozess durch eine eigene Frage dargestellt ist. In diesem
+wobei jeder Prozess durch eine eigene Farbe dargestellt ist. In diesem
 speziellen Lauf haben zwei Prozesse nur drei Kacheln bearbeitet, während die
 beiden anderen Prozesse fünf Kacheln bearbeitet haben.
 
