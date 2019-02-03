@@ -584,8 +584,8 @@ Das Ergebnis lautet::
 Diese Liste von Signaturen enthält nur einen Eintrag, da wir die Funktion ``zeta``
 mit zwei Integer-Argumenten aufgerufen haben. Wie in NumPy können Integers hier
 nicht beliebig lang werden, sondern sind in diesem Beispiel 8 Bytes lang. Es besteht
-also die Gefahr des Überlaufs. So kommt es in unserem Beispiel zur einer Division
-durch Null, wenn man die Variable ``x`` auf den Wert :math:``3`` setzt. Bereits
+also die Gefahr des Überlaufs. So kommt es in unserem Beispiel zu einer Division
+durch Null, wenn man die Variable ``x`` auf den Wert :math:`3` setzt. Bereits
 vor der Division durch Null wird aufgrund des Überlaufs durch negative Zahlen
 dividiert, so dass die Summe unsinnige Werte liefert. Die Gefahr des Überlaufs
 muss also bedacht werden.
